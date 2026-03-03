@@ -1,597 +1,580 @@
 <!doctype html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tutorial: API com Flask</title>
-  
+  <title>Guia Flask API</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            base: "#0f172a",
-            accent: "#10b981", /* Verde Emerald (Python/Flask) */
-            text: "#f8fafc",
+            base: "#08111f",
+            panel: "#122033",
+            card: "#16283f",
+            border: "#29435f",
+            text: "#e2e8f0",
             muted: "#94a3b8",
-            card: "#1e293b",
-            border: "#334155",
-          },
-        },
-      },
+            accent: "#22c55e",
+            info: "#14b8a6",
+            warm: "#f59e0b"
+          }
+        }
+      }
     };
   </script>
   <style>
-    .bg-pattern {
-      background-image:
-        radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0),
-        radial-gradient(circle at 12px 12px, rgba(16, 185, 129, 0.1) 1px, transparent 0);
-      background-size: 24px 24px, 24px 24px;
+    body {
+      background:
+        radial-gradient(circle at top right, rgba(34, 197, 94, 0.14), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(20, 184, 166, 0.12), transparent 34%),
+        #08111f;
     }
-
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
-
-    pre {
-      background-color: #0d1117;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      overflow-x: auto;
-      border: 1px solid #334155;
-      margin: 0;
-    }
-
-    code {
-      font-family: 'Fira Code', 'Courier New', monospace;
-      font-size: 0.875rem;
-      color: #e2e8f0;
-    }
-
-    .step-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+    .step-content { display: none; }
     .step-content.active { display: block; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .nav-item.active { background-color: #10b981; color: white; border-color: #10b981; }
-    
-    .nav-group-content { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.22s ease; }
+    .nav-item.active { background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.35); color: white; }
+    .nav-group-content { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.2s ease; }
     .nav-group.open .nav-group-content { grid-template-rows: 1fr; }
     .nav-group-inner { overflow: hidden; }
-    .nav-group-toggle .chevron { transition: transform 0.22s ease; }
+    .nav-group-toggle .chevron { transition: transform 0.2s ease; }
     .nav-group.open .nav-group-toggle .chevron { transform: rotate(180deg); }
-
     #sidebar-drawer {
       position: fixed; inset: 0 auto 0 0; z-index: 40; width: min(20rem, 86vw);
-      transform: translateX(-100%); transition: transform 0.25s cubic-bezier(.4, 0, .2, 1);
+      transform: translateX(-100%); transition: transform 0.22s ease;
     }
     #sidebar-drawer.open { transform: translateX(0); }
     @media (min-width: 768px) {
-      #sidebar-drawer { position: static; width: 16rem; height: 100vh; transform: translateX(0); }
+      #sidebar-drawer { position: static; width: 18rem; height: 100vh; transform: translateX(0); }
     }
-    
-    /* Syntax Highlighting Python */
-    .py-kw { color: #ff7b72; font-weight: bold; }
-    .py-func { color: #d2a8ff; }
-    .py-str { color: #a5d6ff; }
-    .py-comment { color: #8b949e; font-style: italic; }
-    .py-dec { color: #79c0ff; }
+    pre {
+      margin: 0; overflow-x: auto; border-radius: 0.9rem; border: 1px solid #29435f;
+      background: rgba(8, 17, 31, 0.88); padding: 1rem;
+    }
+    code { font-family: "Fira Code", "Courier New", monospace; font-size: 0.875rem; color: #dbeafe; }
+    .code-shell { border-radius: 1rem; border: 1px solid rgba(41, 67, 95, 0.7); overflow: hidden; background: rgba(8, 17, 31, 0.44); }
+    .code-toolbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+      border-bottom: 1px solid rgba(41, 67, 95, 0.7); background: rgba(15, 23, 42, 0.78);
+      padding: 0.65rem 0.9rem;
+    }
+    .code-toolbar-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #94a3b8; }
+    .code-toolbar-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .code-action {
+      display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 0.7rem;
+      border: 1px solid rgba(41, 67, 95, 0.9); background: rgba(22, 40, 63, 0.92);
+      padding: 0.45rem 0.7rem; font-size: 0.75rem; font-weight: 700; color: #e2e8f0;
+      transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+    }
+    .code-action:hover { border-color: rgba(34, 197, 94, 0.5); color: #22c55e; }
+    .code-shell pre { border: 0; border-radius: 0; }
+    .code-modal-pre {
+      max-height: calc(100vh - 8rem);
+      overflow: auto;
+      border-radius: 1rem;
+      border: 1px solid #29435f;
+      background: rgba(8, 17, 31, 0.96);
+      padding: 1rem;
+    }
+    .code-modal-pre code { white-space: pre; display: block; min-width: max-content; }
   </style>
 </head>
-
-<body class="min-h-screen bg-base text-text bg-pattern flex overflow-x-hidden font-sans">
-
+<body class="min-h-screen text-text flex overflow-x-hidden">
   <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-950/70 md:hidden" onclick="closeSidebar()"></div>
 
-  <aside id="sidebar-drawer" class="bg-card border-r border-border flex flex-col h-screen shadow-xl">
-    <div class="p-6 border-b border-border bg-base/50 backdrop-blur-sm">
+  <aside id="sidebar-drawer" class="bg-panel border-r border-border flex flex-col h-screen shadow-2xl">
+    <div class="p-6 border-b border-border bg-base/70">
       <div class="flex items-center justify-between gap-3">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <i data-lucide="server" class="text-accent w-6 h-6"></i>
-            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">
-              Flask API Master
-            </h1>
+            <i data-lucide="book-open-text" class="w-6 h-6 text-accent"></i>
+            <h1 class="text-lg font-bold text-white">Flask API Docs</h1>
           </div>
-          <p class="text-xs text-muted">Backend Completo</p>
+          <p class="text-xs text-muted">Roteiro antes da implementação</p>
         </div>
-        <button onclick="closeSidebar()" class="rounded-lg p-2 text-muted hover:text-white transition md:hidden">
+        <button onclick="closeSidebar()" class="rounded-lg p-2 text-muted hover:text-white md:hidden">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
     </div>
 
     <nav class="flex-1 overflow-y-auto p-4 space-y-3">
-      <div class="nav-group open rounded-xl border border-white/5 bg-base/20" data-group="intro">
-        <button type="button" onclick="toggleNavGroup('intro')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted transition hover:text-white">
+      <div class="nav-group open rounded-2xl border border-white/5 bg-base/40" data-group="intro">
+        <button type="button" onclick="toggleNavGroup('intro')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.18em] text-muted hover:text-white">
           <span class="flex items-center gap-2"><i data-lucide="rocket" class="w-3.5 h-3.5"></i> Introdução</span>
           <i data-lucide="chevron-down" class="chevron w-4 h-4"></i>
         </button>
         <div class="nav-group-content">
           <div class="nav-group-inner px-2 pb-2 space-y-1">
-            <button onclick="showStep('step-intro')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 active group">
-              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition">0</span>
-              <span class="font-medium">O Projeto</span>
+            <button data-step="step-intro" onclick="showStep('step-intro')" class="nav-item active w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
+              <span class="block text-sm font-semibold text-white">Visão Geral</span>
+              <span class="block text-xs text-muted">Mapa da documentação</span>
+            </button>
+            <button data-step="step-blueprints" onclick="showStep('step-blueprints')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
+              <span class="block text-sm font-semibold text-white">Rotas e Blueprints</span>
+              <span class="block text-xs text-muted">Separação por módulo</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div class="nav-group open rounded-xl border border-white/5 bg-base/20" data-group="banco">
-        <button type="button" onclick="toggleNavGroup('banco')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted transition hover:text-white">
-          <span class="flex items-center gap-2"><i data-lucide="database" class="w-3.5 h-3.5"></i> Estrutura</span>
+      <div class="nav-group open rounded-2xl border border-white/5 bg-base/40" data-group="base">
+        <button type="button" onclick="toggleNavGroup('base')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.18em] text-muted hover:text-white">
+          <span class="flex items-center gap-2"><i data-lucide="layers-3" class="w-3.5 h-3.5"></i> Base</span>
           <i data-lucide="chevron-down" class="chevron w-4 h-4"></i>
         </button>
         <div class="nav-group-content">
           <div class="nav-group-inner px-2 pb-2 space-y-1">
-            <button onclick="showStep('step-setup')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 group">
-              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition">1</span>
-              <span>Setup & Tabelas</span>
+            <button data-step="step-stack" onclick="showStep('step-stack')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
+              <span class="block text-sm font-semibold text-white">Bibliotecas</span>
+              <span class="block text-xs text-muted">Card de cada dependência</span>
+            </button>
+            <button data-step="step-env" onclick="showStep('step-env')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
+              <span class="block text-sm font-semibold text-white">.env e Segredos</span>
+              <span class="block text-xs text-muted">Importância do arquivo</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div class="nav-group open rounded-xl border border-white/5 bg-base/20" data-group="rotas">
-        <button type="button" onclick="toggleNavGroup('rotas')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted transition hover:text-white">
-          <span class="flex items-center gap-2"><i data-lucide="git-merge" class="w-3.5 h-3.5"></i> Rotas (Endpoints)</span>
+      <div class="nav-group open rounded-2xl border border-white/5 bg-base/40" data-group="flow">
+        <button type="button" onclick="toggleNavGroup('flow')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.18em] text-muted hover:text-white">
+          <span class="flex items-center gap-2"><i data-lucide="git-branch-plus" class="w-3.5 h-3.5"></i> Fluxo</span>
           <i data-lucide="chevron-down" class="chevron w-4 h-4"></i>
         </button>
         <div class="nav-group-content">
           <div class="nav-group-inner px-2 pb-2 space-y-1">
-            <button onclick="showStep('step-auth')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 group">
-              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition">2</span>
-              <span>Cadastro & Login</span>
+            <button data-step="step-auth" onclick="showStep('step-auth')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
+              <span class="block text-sm font-semibold text-white">Cadastro e Login</span>
+              <span class="block text-xs text-muted">Entrada do usuário</span>
             </button>
-            <button onclick="showStep('step-tasks')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 group">
-              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition">3</span>
-              <span>Criar Tarefas (JWT)</span>
+            <button data-step="step-tasks" onclick="showStep('step-tasks')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
+              <span class="block text-sm font-semibold text-white">Criar Tarefas</span>
+              <span class="block text-xs text-muted">Gravar título, data e valor</span>
             </button>
-            <button onclick="showStep('step-analytics')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 group">
-              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition">4</span>
-              <span>Agrupamento e Filtros</span>
+            <button data-step="step-calc" onclick="showStep('step-calc')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
+              <span class="block text-sm font-semibold text-white">Cálculo por Usuário</span>
+              <span class="block text-xs text-muted">Filtro e agrupamento por data</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div class="nav-group open rounded-xl border border-white/5 bg-base/20" data-group="docs">
-        <button type="button" onclick="toggleNavGroup('docs')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted transition hover:text-white">
-          <span class="flex items-center gap-2"><i data-lucide="book-open" class="w-3.5 h-3.5"></i> API Docs</span>
+      <div class="nav-group open rounded-2xl border border-white/5 bg-base/40" data-group="ref">
+        <button type="button" onclick="toggleNavGroup('ref')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.18em] text-muted hover:text-white">
+          <span class="flex items-center gap-2"><i data-lucide="file-stack" class="w-3.5 h-3.5"></i> Referência</span>
           <i data-lucide="chevron-down" class="chevron w-4 h-4"></i>
         </button>
         <div class="nav-group-content">
           <div class="nav-group-inner px-2 pb-2 space-y-1">
-            <button onclick="showStep('step-swagger')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 group">
-              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition"><i data-lucide="file-json" class="w-3 h-3"></i></span>
-              <span class="font-medium text-emerald-400">Swagger UI</span>
+            <button data-step="step-reference" onclick="showStep('step-reference')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
+              <span class="block text-sm font-semibold text-white">Rotas Finais</span>
+              <span class="block text-xs text-muted">Resumo dos endpoints</span>
             </button>
           </div>
         </div>
       </div>
-
     </nav>
   </aside>
 
-  <main class="flex-1 min-w-0 h-screen overflow-y-auto relative scroll-smooth">
-    <header class="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-base/80 px-4 py-3 backdrop-blur md:hidden">
+  <main class="min-w-0 flex-1 h-screen overflow-y-auto">
+    <header class="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-base/85 px-4 py-3 md:hidden">
       <div>
-        <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Tutorial</p>
-        <p class="text-sm font-semibold text-white">Flask API Master</p>
+        <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Documentação</p>
+        <p class="text-sm font-semibold text-white">Flask API</p>
       </div>
-      <button onclick="openSidebar()" class="rounded-lg border border-border bg-card px-3 py-2 text-white transition hover:border-accent hover:text-accent">
+      <button onclick="openSidebar()" class="rounded-lg border border-border bg-card px-3 py-2 text-white hover:border-accent hover:text-accent">
         <span class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide"><i data-lucide="menu" class="w-4 h-4"></i> Menu</span>
       </button>
     </header>
 
-    <div class="p-6 md:p-12">
-    <div class="max-w-4xl mx-auto pb-20">
+    <div class="p-6 md:p-10">
+      <div class="mx-auto max-w-5xl space-y-8 pb-24">
 
-      <div id="step-intro" class="step-content active space-y-8 animate-fade-in">
-        <div class="border-b border-border pb-6">
-          <span class="text-accent text-sm font-bold tracking-wider uppercase flex items-center gap-2 mb-2">
-            <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span> Módulo Inicial
-          </span>
-          <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-4">Construindo a API</h2>
-          <p class="text-lg text-muted leading-relaxed max-w-2xl">
-            Vamos construir o coração do seu sistema. Uma API Restful capaz de registrar usuários, gerar tokens de segurança (JWT), salvar tarefas financeiras e devolver relatórios calculados no banco de dados.
-          </p>
-        </div>
+        <section id="step-intro" class="step-content active space-y-6">
+          <div class="rounded-3xl border border-border bg-card/80 p-8">
+            <span class="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-accent">Módulo Inicial</span>
+            <h2 class="mt-4 text-4xl font-black tracking-tight text-white md:text-5xl">Como essa API deve nascer</h2>
+            <p class="mt-4 max-w-3xl text-base leading-8 text-slate-300">
+              Esta página agora apresenta a arquitetura antes do código: rotas para cada ação, blueprints para organizar módulos, `.env` para proteger segredos e um fluxo claro para calcular dados por usuário e data.
+            </p>
+          </div>
+          <div class="grid gap-6 md:grid-cols-3">
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Rotas</h3><p class="mt-3 text-sm leading-7 text-muted">Cada rota representa uma ação da API: cadastrar, autenticar, registrar tarefa e consultar resumo.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Blueprints</h3><p class="mt-3 text-sm leading-7 text-muted">Ajudam a dividir o projeto em módulos como `auth` e `tasks`, evitando concentrar tudo em `app.py`.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Menu guiado</h3><p class="mt-3 text-sm leading-7 text-muted">Cada item do menu foi renomeado para mostrar exatamente o que ele explica.</p></div>
+          </div>
+          <div class="rounded-2xl border border-border bg-base/60 p-5">
+            <p class="text-sm leading-7 text-muted">Os blocos de código agora possuem dois atalhos de uso: <span class="text-white font-semibold">Copiar</span> para levar o trecho direto e <span class="text-white font-semibold">Expandir</span> para abrir uma janela maior sem cortar linhas.</p>
+          </div>
+        </section>
 
-        <div class="grid md:grid-cols-2 gap-6">
-          <div class="p-6 rounded-xl bg-card border border-border hover:border-accent/50 transition-colors group">
-            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <i data-lucide="shield-check" class="text-emerald-400"></i>
+        <section id="step-blueprints" class="step-content space-y-6">
+          <div class="border-b border-border pb-6">
+            <h2 class="text-3xl font-bold text-white">Rotas e Blueprints no Flask</h2>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Rota é o endereço HTTP que chama uma função. Blueprint é o conjunto de rotas relacionadas, registrado com um prefixo para manter o projeto limpo.</p>
+          </div>
+          <div class="grid gap-6 md:grid-cols-2">
+          <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Rota</h3><p class="mt-3 text-sm leading-7 text-muted">Exemplo: `POST /auth/login`. Ela recebe dados, executa uma regra e devolve uma resposta JSON.</p></div>
+          <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Blueprint</h3><p class="mt-3 text-sm leading-7 text-muted">Exemplo: `auth_bp = Blueprint("auth", __name__, url_prefix="/auth")`. Todas as rotas de login e cadastro ficam juntas.</p></div>
+          </div>
+          <div class="rounded-2xl border border-border bg-card/70 p-6">
+            <pre><code>project/
+  app.py
+  routes/
+    auth.py
+    tasks.py
+
+auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+tasks_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
+
+app.register_blueprint(auth_bp)
+app.register_blueprint(tasks_bp)</code></pre>
+          </div>
+        </section>
+
+        <section id="step-stack" class="step-content space-y-6">
+          <div class="border-b border-border pb-6">
+            <h2 class="text-3xl font-bold text-white">Bibliotecas da base</h2>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Aqui cada biblioteca ganhou um card explicando sua função no projeto.</p>
+          </div>
+          <div class="rounded-2xl border border-border bg-base/70 p-6">
+            <pre><code>pip install flask flask-sqlalchemy flask-jwt-extended werkzeug python-dotenv</code></pre>
+          </div>
+          <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Flask</h3><p class="mt-3 text-sm leading-7 text-muted">Cria a aplicação, recebe requests, devolve responses e registra as rotas.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Flask-SQLAlchemy</h3><p class="mt-3 text-sm leading-7 text-muted">Mapeia classes em tabelas e facilita consultas, filtros e agregações.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Flask-JWT-Extended</h3><p class="mt-3 text-sm leading-7 text-muted">Gera e valida tokens JWT para proteger as rotas privadas.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Werkzeug</h3><p class="mt-3 text-sm leading-7 text-muted">Entra no hash de senha com `generate_password_hash` e `check_password_hash`.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">python-dotenv</h3><p class="mt-3 text-sm leading-7 text-muted">Carrega variáveis do `.env` para tirar segredos do código.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">datetime + func</h3><p class="mt-3 text-sm leading-7 text-muted">Convertem datas e calculam totais diretamente no banco.</p></div>
+          </div>
+        </section>
+
+        <section id="step-env" class="step-content space-y-6">
+          <div class="border-b border-border pb-6">
+            <h2 class="text-3xl font-bold text-white">.env e a importância dele</h2>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Esse menu foi criado para explicar por que configuração sensível não deve ficar hardcoded em `app.py`.</p>
+          </div>
+          <div class="rounded-2xl border border-red-500/25 bg-red-500/5 p-6">
+            <p class="text-sm leading-7 text-slate-300">Guarde no `.env` a conexão com o banco, `JWT_SECRET_KEY`, `SECRET_KEY` e flags de ambiente. O arquivo real não deve ir para o git.</p>
+          </div>
+          <div class="grid gap-6 lg:grid-cols-2">
+            <div class="rounded-2xl border border-border bg-card/70 p-6">
+              <h3 class="mb-4 text-lg font-semibold text-white">Exemplo de `.env`</h3>
+              <pre><code>FLASK_ENV=development
+DATABASE_URL=sqlite:///banco.db
+JWT_SECRET_KEY=troque-esta-chave</code></pre>
             </div>
-            <h3 class="text-lg font-semibold mb-2 text-white">Autenticação JWT</h3>
-            <p class="text-sm text-muted">A API não tem "sessão" ativa. O usuário loga, recebe um token criptografado e deve enviar esse token no cabeçalho para acessar as tarefas dele.</p>
-          </div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6">
+              <h3 class="mb-4 text-lg font-semibold text-white">Leitura no app</h3>
+              <pre><code>from dotenv import load_dotenv
+import os
 
-          <div class="p-6 rounded-xl bg-card border border-border hover:border-accent/50 transition-colors group">
-            <div class="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <i data-lucide="bar-chart-3" class="text-teal-400"></i>
+load_dotenv()
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")</code></pre>
             </div>
-            <h3 class="text-lg font-semibold mb-2 text-white">Agrupamento SQL</h3>
-            <p class="text-sm text-muted">Vamos fazer o cálculo de tarefas e soma de valores direto no banco de dados usando SQLAlchemy (muito mais rápido que somar no Python).</p>
           </div>
-        </div>
+        </section>
 
-        <div class="mt-8 flex justify-end">
-          <button onclick="showStep('step-setup')" class="bg-accent hover:bg-emerald-600 text-white px-8 py-4 rounded-xl font-bold transition flex items-center gap-2 shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:-translate-y-1">
-            Iniciar Setup <i data-lucide="arrow-right" class="w-5 h-5"></i>
-          </button>
-        </div>
-      </div>
-
-      <div id="step-setup" class="step-content space-y-8">
-        <div class="border-b border-border pb-6">
-          <div class="flex items-center gap-3 mb-2">
-            <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-mono font-bold border border-emerald-500/20">PASSO 1</span>
+        <section id="step-auth" class="step-content space-y-6">
+          <div class="border-b border-border pb-6">
+            <h2 class="text-3xl font-bold text-white">Cadastro e Login</h2>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Esse menu explica como o usuário entra no sistema e como a API passa a reconhecer a identidade dele nas rotas protegidas.</p>
           </div>
-          <h2 class="text-3xl font-bold text-white">Bibliotecas e Banco de Dados</h2>
-          <p class="text-muted mt-2">Preparando o terreno e desenhando as tabelas User e Task.</p>
-        </div>
-
-        <div class="space-y-4">
-          <h3 class="text-xl font-semibold text-white">1. Instalações Necessárias</h3>
-          <div class="bg-card rounded-lg border border-border overflow-hidden">
-            <div class="px-4 py-2 border-b border-border bg-base/50 text-xs text-muted font-mono">Terminal</div>
-            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code>pip install flask flask-sqlalchemy flask-jwt-extended werkzeug</code></pre>
-          </div>
-        </div>
-
-        <div class="space-y-4 mt-6">
-          <h3 class="text-xl font-semibold text-white">2. Configuração e Modelos (app.py)</h3>
-          <div class="bg-card rounded-lg border border-border overflow-hidden shadow-lg">
-            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code><span class="py-kw">from</span> flask <span class="py-kw">import</span> Flask, request, jsonify
-<span class="py-kw">from</span> flask_sqlalchemy <span class="py-kw">import</span> SQLAlchemy
-<span class="py-kw">from</span> flask_jwt_extended <span class="py-kw">import</span> JWTManager, create_access_token, jwt_required, get_jwt_identity
-<span class="py-kw">from</span> werkzeug.security <span class="py-kw">import</span> generate_password_hash, check_password_hash
-<span class="py-kw">from</span> datetime <span class="py-kw">import</span> datetime
-
-app = Flask(__name__)
-app.config[<span class="py-str">'SQLALCHEMY_DATABASE_URI'</span>] = <span class="py-str">'sqlite:///banco.db'</span>
-app.config[<span class="py-str">'JWT_SECRET_KEY'</span>] = <span class="py-str">'super-chave-secreta-mudar-em-prod'</span>
-
-db = SQLAlchemy(app)
-jwt = JWTManager(app)
-
-<span class="py-kw">class</span> <span class="py-func">User</span>(db.Model):
-    id = db.Column(db.Integer, primary_key=<span class="py-kw">True</span>)
-    username = db.Column(db.String(80), unique=<span class="py-kw">True</span>, nullable=<span class="py-kw">False</span>)
-    password_hash = db.Column(db.String(256), nullable=<span class="py-kw">False</span>)
-    tasks = db.relationship(<span class="py-str">'Task'</span>, backref=<span class="py-str">'owner'</span>, lazy=<span class="py-kw">True</span>)
-
-<span class="py-kw">class</span> <span class="py-func">Task</span>(db.Model):
-    id = db.Column(db.Integer, primary_key=<span class="py-kw">True</span>)
-    title = db.Column(db.String(100), nullable=<span class="py-kw">False</span>)
-    description = db.Column(db.Text)
-    date = db.Column(db.Date, nullable=<span class="py-kw">False</span>)
-    value = db.Column(db.Float, default=0.0)
-    user_id = db.Column(db.Integer, db.ForeignKey(<span class="py-str">'user.id'</span>), nullable=<span class="py-kw">False</span>)
-
-<span class="py-kw">with</span> app.app_context():
-    db.create_all()</code></pre>
-          </div>
-        </div>
-        
-        <div class="flex justify-between pt-6">
-            <button onclick="showStep('step-intro')" class="text-muted hover:text-white px-4 py-2 text-sm flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
-            <button onclick="showStep('step-auth')" class="bg-card border border-border hover:border-accent hover:text-accent text-white px-6 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">Próximo <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
-        </div>
-      </div>
-
-      <div id="step-auth" class="step-content space-y-8">
-        <div class="border-b border-border pb-6">
-          <div class="flex items-center gap-3 mb-2">
-            <span class="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-mono font-bold border border-blue-500/20">PASSO 2</span>
-          </div>
-          <h2 class="text-3xl font-bold text-white">Cadastro e Login</h2>
-        </div>
-
-        <div class="space-y-4">
-          <h3 class="text-xl font-semibold text-white">Criando Usuário</h3>
-          <div class="bg-card rounded-lg border border-border overflow-hidden shadow-lg">
-            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code><span class="py-dec">@app.route</span>(<span class="py-str">'/register'</span>, methods=[<span class="py-str">'POST'</span>])
-<span class="py-kw">def</span> <span class="py-func">register</span>():
+          <div class="grid gap-6 lg:grid-cols-2">
+            <div class="rounded-2xl border border-border bg-card/70 p-6">
+              <h3 class="mb-4 text-lg font-semibold text-white">Cadastro</h3>
+              <pre><code>@auth_bp.post("/register")
+def register():
     data = request.get_json()
-    <span class="py-kw">if</span> User.query.filter_by(username=data[<span class="py-str">'username'</span>]).first():
-        <span class="py-kw">return</span> jsonify({<span class="py-str">"error"</span>: <span class="py-str">"Usuário já existe"</span>}), 400
-
-    hashed_password = generate_password_hash(data[<span class="py-str">'password'</span>])
-    new_user = User(username=data[<span class="py-str">'username'</span>], password_hash=hashed_password)
-    db.session.add(new_user)
+    user = User(username=data["username"])
+    user.password_hash = generate_password_hash(data["password"])
+    db.session.add(user)
     db.session.commit()
-    
-    <span class="py-kw">return</span> jsonify({<span class="py-str">"message"</span>: <span class="py-str">"Usuário criado com sucesso!"</span>}), 201</code></pre>
-          </div>
-        </div>
-
-        <div class="space-y-4 mt-6">
-          <h3 class="text-xl font-semibold text-white">Efetuando Login</h3>
-          <div class="bg-card rounded-lg border border-border overflow-hidden shadow-lg">
-            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code><span class="py-dec">@app.route</span>(<span class="py-str">'/login'</span>, methods=[<span class="py-str">'POST'</span>])
-<span class="py-kw">def</span> <span class="py-func">login</span>():
+    return {"message": "usuário criado"}, 201</code></pre>
+            </div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6">
+              <h3 class="mb-4 text-lg font-semibold text-white">Login</h3>
+              <pre><code>@auth_bp.post("/login")
+def login():
     data = request.get_json()
-    user = User.query.filter_by(username=data[<span class="py-str">'username'</span>]).first()
-
-    <span class="py-kw">if</span> <span class="py-kw">not</span> user <span class="py-kw">or not</span> check_password_hash(user.password_hash, data[<span class="py-str">'password'</span>]):
-        <span class="py-kw">return</span> jsonify({<span class="py-str">"error"</span>: <span class="py-str">"Credenciais inválidas"</span>}), 401
-
-    access_token = create_access_token(identity=str(user.id))
-    <span class="py-kw">return</span> jsonify({<span class="py-str">"token"</span>: access_token}), 200</code></pre>
+    user = User.query.filter_by(username=data["username"]).first()
+    token = create_access_token(identity=str(user.id))
+    return {"token": token}, 200</code></pre>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div class="flex justify-between pt-6">
-            <button onclick="showStep('step-setup')" class="text-muted hover:text-white px-4 py-2 text-sm flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
-            <button onclick="showStep('step-tasks')" class="bg-card border border-border hover:border-accent hover:text-accent text-white px-6 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">Próximo <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
-        </div>
-      </div>
-
-      <div id="step-tasks" class="step-content space-y-8">
-        <div class="border-b border-border pb-6">
-          <div class="flex items-center gap-3 mb-2">
-            <span class="px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 text-xs font-mono font-bold border border-orange-500/20">PASSO 3</span>
+        <section id="step-tasks" class="step-content space-y-6">
+          <div class="border-b border-border pb-6">
+            <h2 class="text-3xl font-bold text-white">Criar tarefas</h2>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Esse menu detalha como gravar título, descrição, data e valor sempre vinculando a tarefa ao usuário autenticado.</p>
           </div>
-          <h2 class="text-3xl font-bold text-white">Criando Tarefas</h2>
-        </div>
-
-        <div class="space-y-4">
-          <div class="bg-card rounded-lg border border-border overflow-hidden shadow-lg">
-            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code><span class="py-dec">@app.route</span>(<span class="py-str">'/tasks'</span>, methods=[<span class="py-str">'POST'</span>])
-<span class="py-dec">@jwt_required()</span>
-<span class="py-kw">def</span> <span class="py-func">create_task</span>():
+          <div class="rounded-2xl border border-border bg-card/70 p-6">
+            <pre><code>@tasks_bp.post("/")
+@jwt_required()
+def create_task():
     current_user_id = get_jwt_identity()
     data = request.get_json()
-
-    task_date = datetime.strptime(data[<span class="py-str">'date'</span>], <span class="py-str">'%Y-%m-%d'</span>).date()
-
-    new_task = Task(
-        title=data[<span class="py-str">'title'</span>],
-        description=data.get(<span class="py-str">'description'</span>, <span class="py-str">""</span>),
-        date=task_date,
-        value=data.get(<span class="py-str">'value'</span>, 0.0),
+    task = Task(
+        title=data["title"],
+        date=datetime.strptime(data["date"], "%Y-%m-%d").date(),
+        value=float(data.get("value", 0)),
         user_id=current_user_id
     )
-
-    db.session.add(new_task)
+    db.session.add(task)
     db.session.commit()
-    <span class="py-kw">return</span> jsonify({<span class="py-str">"message"</span>: <span class="py-str">"Tarefa registrada!"</span>}), 201</code></pre>
+    return {"message": "tarefa registrada"}, 201</code></pre>
           </div>
-        </div>
+        </section>
 
-        <div class="flex justify-between pt-6">
-            <button onclick="showStep('step-auth')" class="text-muted hover:text-white px-4 py-2 text-sm flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
-            <button onclick="showStep('step-analytics')" class="bg-card border border-border hover:border-accent hover:text-accent text-white px-6 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">Próximo <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
-        </div>
-      </div>
-
-      <div id="step-analytics" class="step-content space-y-8">
-        <div class="border-b border-border pb-6">
-          <div class="flex items-center gap-3 mb-2">
-            <span class="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-mono font-bold border border-purple-500/20">PASSO 4</span>
+        <section id="step-calc" class="step-content space-y-6">
+          <div class="border-b border-border pb-6">
+            <h2 class="text-3xl font-bold text-white">Cálculo por usuário e data</h2>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Esse item foi adicionado para deixar explícito o cálculo: primeiro filtra por usuário, depois agrupa por data, e só então soma e conta os registros.</p>
           </div>
-          <h2 class="text-3xl font-bold text-white">Agrupamento SQL</h2>
-        </div>
-
-        <div class="space-y-4">
-          <div class="bg-card rounded-lg border border-border overflow-hidden shadow-lg">
-            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code><span class="py-kw">from</span> sqlalchemy <span class="py-kw">import</span> func
-
-<span class="py-dec">@app.route</span>(<span class="py-str">'/tasks/summary'</span>, methods=[<span class="py-str">'GET'</span>])
-<span class="py-dec">@jwt_required()</span>
-<span class="py-kw">def</span> <span class="py-func">get_tasks_summary</span>():
+          <div class="grid gap-6 md:grid-cols-3">
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">1. Usuário</h3><p class="mt-3 text-sm leading-7 text-muted">`get_jwt_identity()` devolve o ID do dono do token e protege o resumo.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">2. Data</h3><p class="mt-3 text-sm leading-7 text-muted">`group_by(Task.date)` junta os registros do mesmo dia.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">3. Total</h3><p class="mt-3 text-sm leading-7 text-muted">`count()` conta tarefas e `sum()` devolve o valor consolidado.</p></div>
+          </div>
+          <div class="rounded-2xl border border-border bg-card/70 p-6">
+            <pre><code>@tasks_bp.get("/summary")
+@jwt_required()
+def get_tasks_summary():
     current_user_id = get_jwt_identity()
-    
-    daily_stats = db.session.query(
-        Task.date,
-        func.count(Task.id).label(<span class="py-str">'total_tasks'</span>),
-        func.sum(Task.value).label(<span class="py-str">'total_value'</span>)
-    ).filter(Task.user_id == current_user_id) \
-     .group_by(Task.date).all()
-
-    daily_result = [
-        {
-            <span class="py-str">"date"</span>: stat.date.strftime(<span class="py-str">'%Y-%m-%d'</span>),
-            <span class="py-str">"tasks_count"</span>: stat.total_tasks,
-            <span class="py-str">"total_value"</span>: stat.total_value <span class="py-kw">or</span> 0.0
-        } <span class="py-kw">for</span> stat <span class="py-kw">in</span> daily_stats
-    ]
-
-    <span class="py-kw">return</span> jsonify({<span class="py-str">"daily_summary"</span>: daily_result}), 200
-
-<span class="py-kw">if</span> __name__ == <span class="py-str">'__main__'</span>:
-    app.run(debug=<span class="py-kw">True</span>, port=5000)</code></pre>
+    rows = (
+        db.session.query(
+            Task.date,
+            func.count(Task.id).label("tasks_count"),
+            func.sum(Task.value).label("total_value")
+        )
+        .filter(Task.user_id == current_user_id)
+        .group_by(Task.date)
+        .all()
+    )
+    return {
+        "daily_summary": [
+            {
+                "date": row.date.strftime("%Y-%m-%d"),
+                "tasks_count": row.tasks_count,
+                "total_value": row.total_value or 0
+            }
+            for row in rows
+        ]
+    }, 200</code></pre>
           </div>
-        </div>
+        </section>
 
-        <div class="flex justify-between pt-6 pb-20">
-            <button onclick="showStep('step-tasks')" class="text-muted hover:text-white px-4 py-2 text-sm flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
-            <button onclick="showStep('step-swagger')" class="bg-card border border-border hover:border-emerald-500 hover:text-emerald-400 text-white px-6 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">Ver Documentação (Swagger) <i data-lucide="file-json" class="w-4 h-4"></i></button>
-        </div>
+        <section id="step-reference" class="step-content space-y-6">
+          <div class="border-b border-border pb-6">
+            <h2 class="text-3xl font-bold text-white">Rotas finais</h2>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Resumo final da documentação para servir como checklist da implementação.</p>
+          </div>
+          <div class="space-y-4">
+            <div class="rounded-2xl border border-border bg-card/70 p-5"><p class="text-sm text-slate-300"><span class="font-mono text-white">POST /auth/register</span> cria o usuário.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-5"><p class="text-sm text-slate-300"><span class="font-mono text-white">POST /auth/login</span> valida credenciais e devolve token.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-5"><p class="text-sm text-slate-300"><span class="font-mono text-white">POST /tasks</span> grava tarefa para o usuário autenticado.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-5"><p class="text-sm text-slate-300"><span class="font-mono text-white">GET /tasks/summary</span> calcula total por usuário e data.</p></div>
+          </div>
+        </section>
       </div>
-
-      <div id="step-swagger" class="step-content space-y-8">
-        <div class="border-b border-border pb-6">
-          <div class="flex items-center gap-3 mb-2">
-            <span class="px-3 py-1 rounded-full bg-slate-500/10 text-slate-400 text-xs font-mono font-bold border border-slate-500/20">DOCUMENTAÇÃO</span>
-          </div>
-          <h2 class="text-3xl font-bold text-white flex items-center gap-3">Swagger UI <i data-lucide="book-open" class="text-emerald-400 w-6 h-6"></i></h2>
-          <p class="text-muted mt-2">Guia de consumo da API. Envie o <code>Content-Type: application/json</code> em todas as requisições.</p>
-        </div>
-
-        <div class="space-y-6">
-          
-          <div class="border border-emerald-500/30 bg-emerald-500/5 rounded-lg overflow-hidden">
-            <div class="px-4 py-3 border-b border-emerald-500/20 flex flex-wrap items-center gap-3 bg-emerald-500/10">
-              <span class="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded">POST</span>
-              <span class="font-mono text-white text-sm">/register</span>
-              <span class="text-xs text-emerald-100/70 ml-auto hidden sm:block">Cria um novo usuário</span>
-            </div>
-            <div class="p-4 flex flex-col md:flex-row gap-6 text-sm">
-              <div class="flex-1">
-                <p class="text-xs font-bold text-muted mb-2 uppercase">Request Body</p>
-                <pre class="!bg-black/30 !p-3 !text-xs !border-border"><code>{
-  "username": "rodrigo",
-  "password": "123"
-}</code></pre>
-              </div>
-              <div class="flex-1">
-                <p class="text-xs font-bold text-muted mb-2 uppercase">Response (201 Created)</p>
-                <pre class="!bg-black/30 !p-3 !text-xs !border-emerald-500/30"><code>{
-  "message": "Usuário criado com sucesso!"
-}</code></pre>
-              </div>
-            </div>
-          </div>
-
-          <div class="border border-emerald-500/30 bg-emerald-500/5 rounded-lg overflow-hidden">
-            <div class="px-4 py-3 border-b border-emerald-500/20 flex flex-wrap items-center gap-3 bg-emerald-500/10">
-              <span class="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded">POST</span>
-              <span class="font-mono text-white text-sm">/login</span>
-              <span class="text-xs text-emerald-100/70 ml-auto hidden sm:block">Autenticação (Gera Token)</span>
-            </div>
-            <div class="p-4 flex flex-col md:flex-row gap-6 text-sm">
-              <div class="flex-1">
-                <p class="text-xs font-bold text-muted mb-2 uppercase">Request Body</p>
-                <pre class="!bg-black/30 !p-3 !text-xs !border-border"><code>{
-  "username": "rodrigo",
-  "password": "123"
-}</code></pre>
-              </div>
-              <div class="flex-1">
-                <p class="text-xs font-bold text-muted mb-2 uppercase">Response (200 OK)</p>
-                <pre class="!bg-black/30 !p-3 !text-xs !border-emerald-500/30"><code>{
-  "message": "Login realizado!",
-  "token": "eyJhbGciOiJIUzI1NiIsInR..."
-}</code></pre>
-              </div>
-            </div>
-          </div>
-
-          <div class="border border-emerald-500/30 bg-emerald-500/5 rounded-lg overflow-hidden">
-            <div class="px-4 py-3 border-b border-emerald-500/20 flex flex-wrap items-center gap-3 bg-emerald-500/10">
-              <span class="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded">POST</span>
-              <span class="font-mono text-white text-sm">/tasks</span>
-              <i data-lucide="lock" class="w-4 h-4 text-emerald-400" title="Requer Autenticação JWT"></i>
-              <span class="text-xs text-emerald-100/70 ml-auto hidden sm:block">Registra nova tarefa</span>
-            </div>
-            <div class="p-4 text-sm border-b border-emerald-500/10">
-              <p class="text-xs font-bold text-emerald-400 mb-1 uppercase">Headers Necessários</p>
-              <code class="text-xs bg-black/30 px-2 py-1 rounded">Authorization: Bearer &lt;seu_token_aqui&gt;</code>
-            </div>
-            <div class="p-4 flex flex-col md:flex-row gap-6 text-sm">
-              <div class="flex-1">
-                <p class="text-xs font-bold text-muted mb-2 uppercase">Request Body</p>
-                <pre class="!bg-black/30 !p-3 !text-xs !border-border"><code>{
-  "title": "Configurar Servidor",
-  "description": "Ajustar Nginx e Docker",
-  "date": "2026-03-02",
-  "value": 1500.00
-}</code></pre>
-              </div>
-              <div class="flex-1">
-                <p class="text-xs font-bold text-muted mb-2 uppercase">Response (201 Created)</p>
-                <pre class="!bg-black/30 !p-3 !text-xs !border-emerald-500/30"><code>{
-  "message": "Tarefa registrada com sucesso!"
-}</code></pre>
-              </div>
-            </div>
-          </div>
-
-          <div class="border border-blue-500/30 bg-blue-500/5 rounded-lg overflow-hidden">
-            <div class="px-4 py-3 border-b border-blue-500/20 flex flex-wrap items-center gap-3 bg-blue-500/10">
-              <span class="px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded">GET</span>
-              <span class="font-mono text-white text-sm">/tasks/summary</span>
-              <i data-lucide="lock" class="w-4 h-4 text-blue-400" title="Requer Autenticação JWT"></i>
-              <span class="text-xs text-blue-100/70 ml-auto hidden sm:block">Retorna cálculo agrupado</span>
-            </div>
-            <div class="p-4 text-sm border-b border-blue-500/10">
-              <p class="text-xs font-bold text-blue-400 mb-1 uppercase">Headers Necessários</p>
-              <code class="text-xs bg-black/30 px-2 py-1 rounded">Authorization: Bearer &lt;seu_token_aqui&gt;</code>
-            </div>
-            <div class="p-4 flex flex-col md:flex-row gap-6 text-sm">
-              <div class="flex-1 opacity-50">
-                <p class="text-xs font-bold text-muted mb-2 uppercase">Request Body</p>
-                <p class="text-xs italic text-muted mt-4">Nenhum corpo necessário para requisições GET.</p>
-              </div>
-              <div class="flex-1">
-                <p class="text-xs font-bold text-muted mb-2 uppercase">Response (200 OK)</p>
-                <pre class="!bg-black/30 !p-3 !text-xs !border-blue-500/30"><code>{
-  "user_id": "1",
-  "daily_summary": [
-    {
-      "date": "2026-03-02",
-      "tasks_count": 1,
-      "total_value": 1500.0
-    }
-  ]
-}</code></pre>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="flex justify-start pt-6 pb-20">
-            <button onclick="showStep('step-analytics')" class="text-muted hover:text-white px-4 py-2 text-sm flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
-        </div>
-      </div>
-
-    </div>
     </div>
   </main>
 
+  <div id="code-modal" class="fixed inset-0 z-50 hidden bg-slate-950/90 p-4 md:p-6" onclick="handleCodeModalBackdrop(event)">
+    <div class="mx-auto flex h-full max-w-6xl flex-col rounded-3xl border border-border bg-panel shadow-2xl shadow-black/50">
+      <div class="flex items-center justify-between gap-3 border-b border-border px-4 py-4 md:px-6">
+        <div class="min-w-0">
+          <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted">Visualização Expandida</p>
+          <h3 id="code-modal-title" class="truncate text-base font-semibold text-white md:text-lg">Trecho de código</h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="code-modal-copy" type="button" class="code-action" aria-label="Copiar código aberto na janela">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+            <span>Copiar</span>
+          </button>
+          <button type="button" onclick="closeCodeModal()" class="code-action" aria-label="Fechar visualização expandida">
+            <i data-lucide="x" class="w-4 h-4"></i>
+            <span>Fechar</span>
+          </button>
+        </div>
+      </div>
+      <div class="min-h-0 flex-1 p-4 md:p-6">
+        <pre id="code-modal-pre" class="code-modal-pre"><code id="code-modal-code"></code></pre>
+      </div>
+    </div>
+  </div>
+
   <script>
-    lucide.createIcons();
-    const drawer = document.getElementById('sidebar-drawer');
-    const backdrop = document.getElementById('sidebar-backdrop');
+    const drawer = document.getElementById("sidebar-drawer");
+    const backdrop = document.getElementById("sidebar-backdrop");
+    const codeModal = document.getElementById("code-modal");
+    const codeModalTitle = document.getElementById("code-modal-title");
+    const codeModalCode = document.getElementById("code-modal-code");
+    const codeModalCopy = document.getElementById("code-modal-copy");
+
+    function syncBodyOverflow() {
+      const sidebarOpen = drawer.classList.contains("open");
+      const modalOpen = !codeModal.classList.contains("hidden");
+      document.body.style.overflow = sidebarOpen || modalOpen ? "hidden" : "";
+    }
 
     function openSidebar() {
-      drawer.classList.add('open');
-      backdrop.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
+      drawer.classList.add("open");
+      backdrop.classList.remove("hidden");
+      syncBodyOverflow();
     }
 
     function closeSidebar() {
-      drawer.classList.remove('open');
-      backdrop.classList.add('hidden');
-      document.body.style.overflow = '';
+      drawer.classList.remove("open");
+      backdrop.classList.add("hidden");
+      syncBodyOverflow();
     }
 
     function toggleNavGroup(groupName) {
-      const group = document.querySelector(`[data-group="${groupName}"]`);
+      const group = document.querySelector('[data-group="' + groupName + '"]');
       if (!group) return;
-      group.classList.toggle('open');
+      group.classList.toggle("open");
     }
 
     function showStep(stepId) {
-      document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll(".step-content").forEach((el) => el.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach((el) => el.classList.remove("active"));
 
       const content = document.getElementById(stepId);
-      content.classList.remove('active');
-      void content.offsetWidth;
-      content.classList.add('active');
+      if (!content) return;
+      content.classList.add("active");
 
-      document.querySelector('main').scrollTop = 0;
+      const btn = document.querySelector('[data-step="' + stepId + '"]');
+      if (btn) btn.classList.add("active");
 
-      const btn = document.querySelector(`button[onclick="showStep('${stepId}')"]`);
-      if (btn) btn.classList.add('active');
-
+      document.querySelector("main").scrollTop = 0;
       if (window.innerWidth < 768) closeSidebar();
     }
 
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') closeSidebar();
+    function getCodeTitle(pre, index) {
+      const container = pre.parentElement;
+      const localTitle = container ? container.querySelector("h3") : null;
+      if (localTitle) return localTitle.textContent.trim();
+
+      const section = pre.closest("section");
+      const sectionTitle = section ? section.querySelector("h2") : null;
+      if (sectionTitle) return sectionTitle.textContent.trim() + " #" + (index + 1);
+
+      return "Trecho de código #" + (index + 1);
+    }
+
+    function fallbackCopy(text) {
+      const temp = document.createElement("textarea");
+      temp.value = text;
+      temp.setAttribute("readonly", "");
+      temp.style.position = "absolute";
+      temp.style.left = "-9999px";
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand("copy");
+      document.body.removeChild(temp);
+    }
+
+    async function copyCodeText(text, labelNode) {
+      const originalLabel = labelNode.textContent;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          fallbackCopy(text);
+        }
+        labelNode.textContent = "Copiado";
+      } catch (error) {
+        labelNode.textContent = "Falhou";
+      }
+
+      window.setTimeout(() => {
+        labelNode.textContent = originalLabel;
+      }, 1500);
+    }
+
+    function openCodeModal(title, text) {
+      codeModalTitle.textContent = title;
+      codeModalCode.textContent = text;
+      codeModal.classList.remove("hidden");
+      codeModalCopy.onclick = () => {
+        const labelNode = codeModalCopy.querySelector("span");
+        copyCodeText(text, labelNode);
+      };
+      syncBodyOverflow();
+      lucide.createIcons();
+    }
+
+    function closeCodeModal() {
+      codeModal.classList.add("hidden");
+      codeModalCode.textContent = "";
+      syncBodyOverflow();
+    }
+
+    function handleCodeModalBackdrop(event) {
+      if (event.target === codeModal) closeCodeModal();
+    }
+
+    function enhanceCodeBlocks() {
+      document.querySelectorAll("pre").forEach((pre, index) => {
+        if (pre.dataset.enhanced === "true" || pre.id === "code-modal-pre") return;
+
+        const text = pre.textContent;
+        const title = getCodeTitle(pre, index);
+
+        const shell = document.createElement("div");
+        shell.className = "code-shell";
+
+        const toolbar = document.createElement("div");
+        toolbar.className = "code-toolbar";
+        toolbar.innerHTML =
+          '<span class="code-toolbar-label">' + title + '</span>' +
+          '<div class="code-toolbar-actions">' +
+            '<button type="button" class="code-action code-copy" aria-label="Copiar trecho de código">' +
+              '<i data-lucide="copy" class="w-4 h-4"></i>' +
+              '<span>Copiar</span>' +
+            '</button>' +
+            '<button type="button" class="code-action code-expand" aria-label="Expandir trecho de código">' +
+              '<i data-lucide="maximize-2" class="w-4 h-4"></i>' +
+              '<span>Expandir</span>' +
+            '</button>' +
+          '</div>';
+
+        const parent = pre.parentNode;
+        parent.insertBefore(shell, pre);
+        shell.appendChild(toolbar);
+        shell.appendChild(pre);
+        pre.dataset.enhanced = "true";
+
+        const copyButton = toolbar.querySelector(".code-copy");
+        const expandButton = toolbar.querySelector(".code-expand");
+
+        copyButton.addEventListener("click", () => {
+          const labelNode = copyButton.querySelector("span");
+          copyCodeText(text, labelNode);
+        });
+
+        expandButton.addEventListener("click", () => {
+          openCodeModal(title, text);
+        });
+      });
+    }
+
+    enhanceCodeBlocks();
+    lucide.createIcons();
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      if (!codeModal.classList.contains("hidden")) {
+        closeCodeModal();
+        return;
+      }
+      closeSidebar();
     });
   </script>
 </body>

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iFoud Pulse | Logista</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brand: "#b45309", night: "#07131f", panel: "#102235", line: "#27445f" }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top right, rgba(245, 158, 11, 0.20), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(15, 118, 110, 0.10), transparent 34%),
+        #07131f;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-night text-slate-100">
+  <div class="mx-auto max-w-7xl px-4 py-6 md:px-8">
+    <header class="rounded-3xl border border-line bg-panel/80 px-5 py-4">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.22em] text-amber-300">Módulo Logista</p>
+          <h1 class="mt-1 text-3xl font-black tracking-tight text-white">Operação do restaurante e da loja</h1>
+        </div>
+        <nav class="flex flex-wrap gap-2 text-sm font-semibold">
+          <a href="./index.html" class="rounded-xl border border-line bg-slate-900/40 px-4 py-2 hover:border-teal-400/40 hover:text-teal-200">Início</a>
+          <a href="./cliente.html" class="rounded-xl border border-line bg-slate-900/40 px-4 py-2 hover:border-teal-400/40 hover:text-teal-200">Cliente</a>
+          <a href="./logista.html" class="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-amber-200">Logista</a>
+          <a href="./admin.html" class="rounded-xl border border-line bg-slate-900/40 px-4 py-2 hover:border-cyan-400/40 hover:text-cyan-200">Admin</a>
+          <a href="./manual.html" class="rounded-xl border border-line bg-slate-900/40 px-4 py-2 hover:border-white/20 hover:text-white">Manual</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="space-y-8 py-8">
+      <section class="rounded-[2rem] border border-line bg-panel/80 p-7 md:p-9">
+        <span class="inline-flex rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-amber-200">Objetivo</span>
+        <h2 class="mt-4 text-4xl font-black tracking-tight text-white md:text-5xl">Dar velocidade para vender e clareza para operar</h2>
+        <p class="mt-5 max-w-4xl text-base leading-8 text-slate-300">
+          O painel do logista será o centro da rotina do restaurante: entrada de pedidos, produção, expedição, catálogo, promoções e repasses. O diferencial será uma linha do tempo operacional que mostra gargalo por etapa para agir antes de atrasar.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Telas principais</p>
+          <h2 class="mt-2 text-3xl font-black text-white">Front do parceiro logista</h2>
+        </div>
+        <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <article class="rounded-3xl border border-line bg-panel/75 p-6">
+            <h3 class="text-xl font-bold text-white">1. Onboarding da loja</h3>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Cadastro do restaurante, documentos, horários, áreas de entrega e meios de pagamento.</p>
+          </article>
+          <article class="rounded-3xl border border-line bg-panel/75 p-6">
+            <h3 class="text-xl font-bold text-white">2. Dashboard operacional</h3>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Fila de pedidos, pedidos em atraso, tempo médio de preparo e status em tempo real.</p>
+          </article>
+          <article class="rounded-3xl border border-line bg-panel/75 p-6">
+            <h3 class="text-xl font-bold text-white">3. Cardápio e estoque</h3>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Produtos, categorias, adicionais, disponibilidade por faixa horária e ativação rápida.</p>
+          </article>
+          <article class="rounded-3xl border border-line bg-panel/75 p-6">
+            <h3 class="text-xl font-bold text-white">4. Promoções</h3>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Combos, descontos, horários de campanha, banners da loja e cupom patrocinado.</p>
+          </article>
+          <article class="rounded-3xl border border-line bg-panel/75 p-6">
+            <h3 class="text-xl font-bold text-white">5. Expedição</h3>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Controle da etapa pronto para entrega, retirada, entrega própria ou parceiro logístico.</p>
+          </article>
+          <article class="rounded-3xl border border-line bg-panel/75 p-6">
+            <h3 class="text-xl font-bold text-white">6. Financeiro</h3>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Faturamento, repasses, taxas, cancelamentos, metas e horários mais lucrativos.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="grid gap-6 lg:grid-cols-2">
+        <div class="rounded-3xl border border-line bg-panel/80 p-6">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-amber-200">Funções do módulo</p>
+          <div class="mt-4 space-y-3 text-sm leading-7 text-slate-300">
+            <p>Gestão da loja, horários e status aberto/fechado.</p>
+            <p>Cadastro completo do cardápio, combos e adicionais.</p>
+            <p>Fila de pedidos com atualização instantânea.</p>
+            <p>Controle de preparo, expedição, entrega e retirada.</p>
+            <p>Promoções, cupons e campanhas sazonais.</p>
+            <p>Indicadores de venda, ticket médio e repasses.</p>
+          </div>
+        </div>
+
+        <div class="rounded-3xl border border-line bg-panel/80 p-6">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">MVC do logista</p>
+          <div class="mt-4 grid gap-4">
+            <div class="rounded-2xl border border-line bg-slate-950/30 p-4">
+              <p class="font-semibold text-white">View</p>
+              <p class="mt-2 text-sm leading-7 text-slate-300">Dashboard, catálogo, fila de pedidos, promoções e financeiro em versão desktop e tablet.</p>
+            </div>
+            <div class="rounded-2xl border border-line bg-slate-950/30 p-4">
+              <p class="font-semibold text-white">Controller</p>
+              <p class="mt-2 text-sm leading-7 text-slate-300">Processa entrada de pedidos, troca de status, ativação de produto e criação de campanhas.</p>
+            </div>
+            <div class="rounded-2xl border border-line bg-slate-950/30 p-4">
+              <p class="font-semibold text-white">Model</p>
+              <p class="mt-2 text-sm leading-7 text-slate-300">Loja, cardápio, item, adicional, pedido, estoque, repasse, campanha e horário de operação.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-3xl border border-line bg-panel/80 p-6">
+        <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">API que o logista consome</p>
+        <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div class="rounded-2xl border border-line bg-slate-950/30 p-4"><p class="font-mono text-sm text-white">GET /api/v1/merchant/orders</p><p class="mt-2 text-sm leading-7 text-slate-300">Listar fila de pedidos por status.</p></div>
+          <div class="rounded-2xl border border-line bg-slate-950/30 p-4"><p class="font-mono text-sm text-white">PATCH /api/v1/merchant/orders/:id</p><p class="mt-2 text-sm leading-7 text-slate-300">Avançar status de preparo e entrega.</p></div>
+          <div class="rounded-2xl border border-line bg-slate-950/30 p-4"><p class="font-mono text-sm text-white">GET /api/v1/merchant/catalog</p><p class="mt-2 text-sm leading-7 text-slate-300">Carregar cardápio para edição.</p></div>
+          <div class="rounded-2xl border border-line bg-slate-950/30 p-4"><p class="font-mono text-sm text-white">POST /api/v1/merchant/catalog/items</p><p class="mt-2 text-sm leading-7 text-slate-300">Criar item ou adicional.</p></div>
+          <div class="rounded-2xl border border-line bg-slate-950/30 p-4"><p class="font-mono text-sm text-white">POST /api/v1/merchant/campaigns</p><p class="mt-2 text-sm leading-7 text-slate-300">Criar campanha promocional.</p></div>
+          <div class="rounded-2xl border border-line bg-slate-950/30 p-4"><p class="font-mono text-sm text-white">GET /api/v1/merchant/finance</p><p class="mt-2 text-sm leading-7 text-slate-300">Consultar repasses e indicadores.</p></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
