@@ -4,6 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Guia Flask API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>
@@ -26,12 +29,27 @@
     };
   </script>
   <style>
+    :root {
+      --font-body: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+      --font-display: "Sora", "Segoe UI", sans-serif;
+    }
     body {
+      font-family: var(--font-body);
       background:
         radial-gradient(circle at top right, rgba(34, 197, 94, 0.14), transparent 28%),
         radial-gradient(circle at bottom left, rgba(20, 184, 166, 0.12), transparent 34%),
         #08111f;
     }
+    h1, h2, h3 {
+      font-family: var(--font-display);
+      letter-spacing: -0.03em;
+      text-wrap: balance;
+    }
+    p {
+      letter-spacing: -0.01em;
+      text-wrap: pretty;
+    }
+    button { font-family: var(--font-body); }
     .step-content { display: none; }
     .step-content.active { display: block; }
     .nav-item.active { background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.35); color: white; }
@@ -53,14 +71,38 @@
       background: rgba(8, 17, 31, 0.88); padding: 1rem;
     }
     code { font-family: "Fira Code", "Courier New", monospace; font-size: 0.875rem; color: #dbeafe; }
-    .code-shell { border-radius: 1rem; border: 1px solid rgba(41, 67, 95, 0.7); overflow: hidden; background: rgba(8, 17, 31, 0.44); }
+    .code-shell {
+      min-width: 0;
+      max-width: 100%;
+      border-radius: 1rem;
+      border: 1px solid rgba(41, 67, 95, 0.7);
+      overflow: hidden;
+      background: rgba(8, 17, 31, 0.44);
+    }
     .code-toolbar {
-      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;
       border-bottom: 1px solid rgba(41, 67, 95, 0.7); background: rgba(15, 23, 42, 0.78);
       padding: 0.65rem 0.9rem;
     }
-    .code-toolbar-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #94a3b8; }
-    .code-toolbar-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .code-toolbar-label {
+      min-width: 0;
+      flex: 1 1 10rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .code-toolbar-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      width: 100%;
+    }
     .code-action {
       display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 0.7rem;
       border: 1px solid rgba(41, 67, 95, 0.9); background: rgba(22, 40, 63, 0.92);
@@ -69,6 +111,255 @@
     }
     .code-action:hover { border-color: rgba(34, 197, 94, 0.5); color: #22c55e; }
     .code-shell pre { border: 0; border-radius: 0; }
+    .detail-panel {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.9rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(41, 67, 95, 0.75);
+      background: rgba(8, 17, 31, 0.5);
+      padding: 1rem;
+    }
+    .detail-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.4rem;
+      height: 2.4rem;
+      flex: 0 0 2.4rem;
+      border-radius: 0.9rem;
+      border: 1px solid rgba(34, 197, 94, 0.18);
+      background: rgba(34, 197, 94, 0.1);
+      color: #86efac;
+    }
+    .detail-copy {
+      flex: 1;
+      min-width: 0;
+    }
+    .detail-kicker {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #86efac;
+    }
+    .detail-text {
+      margin-top: 0.35rem;
+      font-size: 0.96rem;
+      line-height: 1.85;
+      color: #d6e0ec;
+    }
+    .detail-lead {
+      border-radius: 1rem;
+      border: 1px solid rgba(34, 197, 94, 0.16);
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.11), rgba(20, 184, 166, 0.08));
+      padding: 1rem;
+    }
+    .detail-lead .detail-panel {
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+    .detail-lead .detail-icon {
+      background: rgba(8, 17, 31, 0.45);
+      border-color: rgba(255, 255, 255, 0.08);
+      color: #f0fdf4;
+    }
+    .file-map-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+    }
+    .file-map-card {
+      min-height: 100%;
+      padding: 1.25rem;
+    }
+    .file-map-title {
+      font-size: 1rem;
+      line-height: 1.35;
+    }
+    .file-map-meta {
+      margin-top: 0.25rem;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .file-map-actions {
+      margin-top: auto;
+      padding-top: 1.25rem;
+      display: flex;
+    }
+    .file-map-actions .code-action {
+      width: 100%;
+      justify-content: center;
+    }
+    .endpoint-list {
+      display: grid;
+      gap: 0.85rem;
+      grid-template-columns: 1fr;
+    }
+    .endpoint-card {
+      border-radius: 1rem;
+      border: 1px solid rgba(41, 67, 95, 0.78);
+      background: rgba(8, 17, 31, 0.52);
+      padding: 0.95rem 1rem;
+    }
+    .endpoint-top {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .http-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 4.25rem;
+      border-radius: 9999px;
+      padding: 0.32rem 0.65rem;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+    .http-badge-post {
+      color: #fef3c7;
+      background: rgba(245, 158, 11, 0.14);
+      border-color: rgba(245, 158, 11, 0.28);
+    }
+    .http-badge-get {
+      color: #ccfbf1;
+      background: rgba(20, 184, 166, 0.14);
+      border-color: rgba(20, 184, 166, 0.26);
+    }
+    .endpoint-path {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #ffffff;
+      word-break: break-word;
+    }
+    .endpoint-target {
+      margin-top: 0.55rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid rgba(41, 67, 95, 0.5);
+      font-size: 0.8rem;
+      line-height: 1.65;
+      color: #b8c6d8;
+      word-break: break-word;
+    }
+    .endpoint-kicker {
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .learning-grid {
+      gap: 1rem;
+    }
+    .learning-card {
+      padding: 1rem !important;
+      border-radius: 1rem;
+    }
+    .learning-card .code-shell {
+      border-radius: 0.9rem;
+    }
+    .learning-card .code-toolbar {
+      padding: 0.55rem 0.7rem;
+      gap: 0.5rem;
+    }
+    .learning-card .code-toolbar-label {
+      font-size: 0.66rem;
+      letter-spacing: 0.1em;
+    }
+    .learning-card .code-action {
+      padding: 0.38rem 0.58rem;
+      font-size: 0.66rem;
+    }
+    .learning-card pre {
+      max-height: 10.5rem;
+      overscroll-behavior: contain;
+    }
+    .learning-card pre code {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    @media (min-width: 640px) {
+      .code-toolbar {
+        align-items: center;
+      }
+      .code-toolbar-actions {
+        width: auto;
+      }
+      .file-map-actions .code-action { width: auto; }
+    }
+    @media (min-width: 768px) {
+      .file-map-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .endpoint-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .learning-card {
+        padding: 1.05rem !important;
+      }
+      .learning-card pre {
+        max-height: 12rem;
+      }
+      .learning-card pre code {
+        white-space: pre;
+        word-break: normal;
+      }
+    }
+    @media (min-width: 1024px) {
+      .file-map-grid {
+        gap: 0.85rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .file-map-card {
+        padding: 0.95rem;
+        border-radius: 1.05rem;
+      }
+      .file-map-header { gap: 0.7rem; }
+      .file-map-icon {
+        width: 2.45rem;
+        height: 2.45rem;
+        border-radius: 0.8rem;
+      }
+      .file-map-icon svg {
+        width: 1rem;
+        height: 1rem;
+      }
+      .file-map-title {
+        font-size: 0.9rem;
+        line-height: 1.3;
+      }
+      .file-map-meta {
+        margin-top: 0.12rem;
+        font-size: 0.6rem;
+      }
+      .file-map-actions {
+        padding-top: 0.8rem;
+      }
+      .file-map-actions .code-action {
+        padding: 0.38rem 0.6rem;
+        font-size: 0.67rem;
+      }
+      .learning-card {
+        padding: 1.1rem !important;
+      }
+      .learning-card pre {
+        max-height: 13rem;
+      }
+    }
+    @media (min-width: 1280px) {
+      .file-map-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .learning-card pre {
+        max-height: 14rem;
+      }
+    }
+    @media (min-width: 1536px) {
+      .file-map-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    }
     .code-modal-pre {
       max-height: calc(100vh - 8rem);
       overflow: auto;
@@ -112,8 +403,8 @@
               <span class="block text-xs text-muted">Mapa da documentação</span>
             </button>
             <button data-step="step-blueprints" onclick="showStep('step-blueprints')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
-              <span class="block text-sm font-semibold text-white">Rotas e Blueprints</span>
-              <span class="block text-xs text-muted">Separação por módulo</span>
+              <span class="block text-sm font-semibold text-white">Estrutura do Projeto</span>
+              <span class="block text-xs text-muted">Pastas, arquivos e camadas</span>
             </button>
           </div>
         </div>
@@ -131,8 +422,8 @@
               <span class="block text-xs text-muted">Card de cada dependência</span>
             </button>
             <button data-step="step-env" onclick="showStep('step-env')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
-              <span class="block text-sm font-semibold text-white">.env e Segredos</span>
-              <span class="block text-xs text-muted">Importância do arquivo</span>
+              <span class="block text-sm font-semibold text-white">Config e Conexão</span>
+              <span class="block text-xs text-muted">Arquivo de configuração</span>
             </button>
           </div>
         </div>
@@ -147,11 +438,11 @@
           <div class="nav-group-inner px-2 pb-2 space-y-1">
             <button data-step="step-auth" onclick="showStep('step-auth')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
               <span class="block text-sm font-semibold text-white">Cadastro e Login</span>
-              <span class="block text-xs text-muted">Entrada do usuário</span>
+              <span class="block text-xs text-muted">Model, controller e rota</span>
             </button>
             <button data-step="step-tasks" onclick="showStep('step-tasks')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
               <span class="block text-sm font-semibold text-white">Criar Tarefas</span>
-              <span class="block text-xs text-muted">Gravar título, data e valor</span>
+              <span class="block text-xs text-muted">Model, controller e rota</span>
             </button>
             <button data-step="step-calc" onclick="showStep('step-calc')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
               <span class="block text-sm font-semibold text-white">Cálculo por Usuário</span>
@@ -169,8 +460,8 @@
         <div class="nav-group-content">
           <div class="nav-group-inner px-2 pb-2 space-y-1">
             <button data-step="step-reference" onclick="showStep('step-reference')" class="nav-item w-full rounded-xl border border-transparent px-4 py-3 text-left hover:bg-white/5">
-              <span class="block text-sm font-semibold text-white">Rotas Finais</span>
-              <span class="block text-xs text-muted">Resumo dos endpoints</span>
+              <span class="block text-sm font-semibold text-white">Mapa dos Arquivos</span>
+              <span class="block text-xs text-muted">Checklist da arquitetura</span>
             </button>
           </div>
         </div>
@@ -189,21 +480,77 @@
       </button>
     </header>
 
-    <div class="p-6 md:p-10">
-      <div class="mx-auto max-w-5xl space-y-8 pb-24">
+    <div class="px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-8 xl:px-10 xl:py-10 2xl:px-12">
+      <div class="mx-auto w-full max-w-[96rem] space-y-8 pb-20 xl:max-w-[104rem] 2xl:max-w-[112rem]">
 
         <section id="step-intro" class="step-content active space-y-6">
-          <div class="rounded-3xl border border-border bg-card/80 p-8">
-            <span class="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-accent">Módulo Inicial</span>
-            <h2 class="mt-4 text-4xl font-black tracking-tight text-white md:text-5xl">Como essa API deve nascer</h2>
-            <p class="mt-4 max-w-3xl text-base leading-8 text-slate-300">
-              Esta página agora apresenta a arquitetura antes do código: rotas para cada ação, blueprints para organizar módulos, `.env` para proteger segredos e um fluxo claro para calcular dados por usuário e data.
-            </p>
+          <div class="rounded-3xl border border-border bg-card/80 p-6 sm:p-7 lg:p-8 xl:p-10">
+            <div class="grid gap-6 lg:grid-cols-[1.35fr,0.75fr] lg:items-center">
+              <div>
+                <span class="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-accent">Módulo Inicial</span>
+                <h2 class="mt-4 text-4xl font-black tracking-tight text-white md:text-5xl">Como essa API deve nascer</h2>
+                <p class="mt-4 max-w-3xl text-base leading-8 text-slate-300">
+                  Esta página agora apresenta a arquitetura antes do código: uma árvore de pastas clara, arquivos em minúsculo, uma camada de conexão centralizada e um fluxo limpo para autenticação e tarefas.
+                </p>
+              </div>
+              <div class="rounded-3xl border border-accent/15 bg-base/70 p-5 shadow-xl shadow-black/20">
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-accent">Resumo Visual</p>
+                    <p class="mt-1 text-sm text-muted">Contagem do núcleo inicial</p>
+                  </div>
+                  <span class="rounded-2xl border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white">Estrutura</span>
+                </div>
+                <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                  <div class="rounded-2xl border border-border bg-card/70 p-4">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted">Pastas</p>
+                    <p class="mt-2 text-3xl font-black text-white">5</p>
+                  </div>
+                  <div class="rounded-2xl border border-border bg-card/70 p-4">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted">Arquivos</p>
+                    <p class="mt-2 text-3xl font-black text-white">9</p>
+                  </div>
+                </div>
+                <p class="mt-4 text-xs leading-6 text-muted">Resumo pensado para mostrar a base mínima antes de detalhar a árvore completa, sem contar o arquivo `.env`.</p>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-2xl border border-border bg-card/70 p-6">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div class="max-w-2xl">
+                <h3 class="text-lg font-semibold text-white">Leitura rápida da árvore</h3>
+                <p class="mt-3 text-sm leading-7 text-muted">Todo nome de arquivo e pasta deve ficar em minúsculo. Quando precisar separar palavras, use `_`, como em `auth_controller.py` e `task_routes.py`.</p>
+              </div>
+              <span class="inline-flex items-center rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-accent">Padrão de nomes</span>
+            </div>
+            <div class="mt-5 grid gap-6 xl:grid-cols-[1.2fr,1fr]">
+              <pre><code>flask-api/
+  app.py
+  config.py
+  .env
+  app/
+    extensions.py
+    models/
+      user.py
+      task.py
+    controllers/
+      auth_controller.py
+      task_controller.py
+    routes/
+      auth_routes.py
+      task_routes.py</code></pre>
+              <div class="grid gap-4">
+                <div class="rounded-2xl border border-border bg-base/60 p-4"><p class="text-sm leading-7 text-muted"><span class="font-mono text-white">app.py</span> inicia a API e registra os módulos.</p></div>
+                <div class="rounded-2xl border border-border bg-base/60 p-4"><p class="text-sm leading-7 text-muted"><span class="font-mono text-white">config.py</span> concentra as configurações globais.</p></div>
+                <div class="rounded-2xl border border-border bg-base/60 p-4"><p class="text-sm leading-7 text-muted"><span class="font-mono text-white">app/extensions.py</span> centraliza a conexão com banco e JWT.</p></div>
+                <div class="rounded-2xl border border-border bg-base/60 p-4"><p class="text-sm leading-7 text-muted"><span class="font-mono text-white">models</span>, <span class="font-mono text-white">controllers</span> e <span class="font-mono text-white">routes</span> separam tabela, regra e endpoint.</p></div>
+              </div>
+            </div>
           </div>
           <div class="grid gap-6 md:grid-cols-3">
-            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Rotas</h3><p class="mt-3 text-sm leading-7 text-muted">Cada rota representa uma ação da API: cadastrar, autenticar, registrar tarefa e consultar resumo.</p></div>
-            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Blueprints</h3><p class="mt-3 text-sm leading-7 text-muted">Ajudam a dividir o projeto em módulos como `auth` e `tasks`, evitando concentrar tudo em `app.py`.</p></div>
-            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Menu guiado</h3><p class="mt-3 text-sm leading-7 text-muted">Cada item do menu foi renomeado para mostrar exatamente o que ele explica.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Separação por camada</h3><p class="mt-3 text-sm leading-7 text-muted">Cada parte da API tem seu lugar: rota recebe, controller decide e model persiste.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Arquivos previsíveis</h3><p class="mt-3 text-sm leading-7 text-muted">Com tudo em minúsculo, o projeto fica mais fácil de localizar, ler e manter.</p></div>
+            <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Menu guiado</h3><p class="mt-3 text-sm leading-7 text-muted">Cada item do menu agora segue a ordem natural de quem vai montar a API.</p></div>
           </div>
           <div class="rounded-2xl border border-border bg-base/60 p-5">
             <p class="text-sm leading-7 text-muted">Os blocos de código agora possuem dois atalhos de uso: <span class="text-white font-semibold">Copiar</span> para levar o trecho direto e <span class="text-white font-semibold">Expandir</span> para abrir uma janela maior sem cortar linhas.</p>
@@ -212,25 +559,39 @@
 
         <section id="step-blueprints" class="step-content space-y-6">
           <div class="border-b border-border pb-6">
-            <h2 class="text-3xl font-bold text-white">Rotas e Blueprints no Flask</h2>
-            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Rota é o endereço HTTP que chama uma função. Blueprint é o conjunto de rotas relacionadas, registrado com um prefixo para manter o projeto limpo.</p>
+            <h2 class="text-3xl font-bold text-white">Estrutura mínima do projeto</h2>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Antes de pensar nas rotas, a API precisa deixar claro onde cada responsabilidade mora: inicialização, conexão, models, controllers e arquivos de rota.</p>
           </div>
-          <div class="grid gap-6 md:grid-cols-2">
-          <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Rota</h3><p class="mt-3 text-sm leading-7 text-muted">Exemplo: `POST /auth/login`. Ela recebe dados, executa uma regra e devolve uma resposta JSON.</p></div>
-          <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">Blueprint</h3><p class="mt-3 text-sm leading-7 text-muted">Exemplo: `auth_bp = Blueprint("auth", __name__, url_prefix="/auth")`. Todas as rotas de login e cadastro ficam juntas.</p></div>
+          <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">app.py</h3><p class="mt-3 text-sm leading-7 text-muted">Ponto de entrada da API. Cria a app, carrega config e registra os blueprints.</p></div>
+          <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">app/models/</h3><p class="mt-3 text-sm leading-7 text-muted">Representa as tabelas e relacionamentos. Aqui ficam `user.py` e `task.py`.</p></div>
+          <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">app/controllers/</h3><p class="mt-3 text-sm leading-7 text-muted">Recebe a regra de negócio. Cada endpoint chama uma função de controller.</p></div>
+          <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">app/routes/</h3><p class="mt-3 text-sm leading-7 text-muted">Mantém os blueprints e o mapeamento entre URL e controller.</p></div>
           </div>
           <div class="rounded-2xl border border-border bg-card/70 p-6">
-            <pre><code>project/
+            <h3 class="mb-4 text-lg font-semibold text-white">Estrutura base</h3>
+            <pre><code>flask-api/
   app.py
-  routes/
-    auth.py
-    tasks.py
-
-auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
-tasks_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
-
-app.register_blueprint(auth_bp)
-app.register_blueprint(tasks_bp)</code></pre>
+  config.py
+  .env
+  app/
+    __init__.py
+    extensions.py
+    models/
+      __init__.py
+      user.py
+      task.py
+    controllers/
+      __init__.py
+      auth_controller.py
+      task_controller.py
+    routes/
+      __init__.py
+      auth_routes.py
+      task_routes.py</code></pre>
+          </div>
+          <div class="rounded-2xl border border-border bg-base/60 p-5">
+            <p class="text-sm leading-7 text-muted">`routes` recebe a URL, `controllers` executa a regra, `models` conversa com o banco e `extensions.py` centraliza a conexão compartilhada.</p>
           </div>
         </section>
 
@@ -254,27 +615,94 @@ app.register_blueprint(tasks_bp)</code></pre>
 
         <section id="step-env" class="step-content space-y-6">
           <div class="border-b border-border pb-6">
-            <h2 class="text-3xl font-bold text-white">.env e a importância dele</h2>
-            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Esse menu foi criado para explicar por que configuração sensível não deve ficar hardcoded em `app.py`.</p>
+            <h2 class="text-3xl font-bold text-white">Config e conexão</h2>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">O `.env` continua guardando segredos, mas a conexão não deve ficar espalhada. Centralize configuração em `config.py` e a inicialização compartilhada em `app/extensions.py`.</p>
           </div>
           <div class="rounded-2xl border border-red-500/25 bg-red-500/5 p-6">
             <p class="text-sm leading-7 text-slate-300">Guarde no `.env` a conexão com o banco, `JWT_SECRET_KEY`, `SECRET_KEY` e flags de ambiente. O arquivo real não deve ir para o git.</p>
           </div>
-          <div class="grid gap-6 lg:grid-cols-2">
-            <div class="rounded-2xl border border-border bg-card/70 p-6">
-              <h3 class="mb-4 text-lg font-semibold text-white">Exemplo de `.env`</h3>
-              <pre><code>FLASK_ENV=development
-DATABASE_URL=sqlite:///banco.db
-JWT_SECRET_KEY=troque-esta-chave</code></pre>
+          <div class="grid learning-grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div class="learning-card flex h-full flex-col rounded-2xl border border-border bg-card/70 p-6">
+              <div class="mb-4 flex items-center gap-3">
+                <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-accent/15 bg-accent/10 text-accent">
+                  <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+                </span>
+                <div>
+                  <h3 class="text-lg font-semibold text-white">config.py</h3>
+                  <p class="mt-1 text-[11px] font-bold uppercase tracking-[0.16em] text-muted">Configuração global</p>
+                </div>
+              </div>
+              <pre><code>import os
+
+class Config:
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///banco.db")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "troque-esta-chave")</code></pre>
+              <div class="mt-auto pt-5 flex">
+                <button type="button" onclick="openInfoModal('config')" class="code-action w-full justify-center sm:w-auto" aria-label="Abrir mais detalhes sobre config.py">
+                  <i data-lucide="book-open-text" class="w-4 h-4"></i>
+                  <span>Saiba mais</span>
+                </button>
+              </div>
             </div>
-            <div class="rounded-2xl border border-border bg-card/70 p-6">
-              <h3 class="mb-4 text-lg font-semibold text-white">Leitura no app</h3>
+            <div class="learning-card flex h-full flex-col rounded-2xl border border-border bg-card/70 p-6">
+              <div class="mb-4 flex items-center gap-3">
+                <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-info/20 bg-info/10 text-info">
+                  <i data-lucide="plug-zap" class="w-5 h-5"></i>
+                </span>
+                <div>
+                  <h3 class="text-lg font-semibold text-white">app/extensions.py</h3>
+                  <p class="mt-1 text-[11px] font-bold uppercase tracking-[0.16em] text-muted">Extensões compartilhadas</p>
+                </div>
+              </div>
+              <pre><code>from flask_jwt_extended import JWTManager
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+jwt = JWTManager()
+
+def init_extensions(app):
+    db.init_app(app)
+    jwt.init_app(app)</code></pre>
+              <div class="mt-auto pt-5 flex">
+                <button type="button" onclick="openInfoModal('extensions')" class="code-action w-full justify-center sm:w-auto" aria-label="Abrir mais detalhes sobre app/extensions.py">
+                  <i data-lucide="book-open-text" class="w-4 h-4"></i>
+                  <span>Saiba mais</span>
+                </button>
+              </div>
+            </div>
+            <div class="learning-card flex h-full flex-col rounded-2xl border border-border bg-card/70 p-6">
+              <div class="mb-4 flex items-center gap-3">
+                <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-warm/20 bg-warm/10 text-warm">
+                  <i data-lucide="rocket" class="w-5 h-5"></i>
+                </span>
+                <div>
+                  <h3 class="text-lg font-semibold text-white">app.py</h3>
+                  <p class="mt-1 text-[11px] font-bold uppercase tracking-[0.16em] text-muted">Bootstrap da API</p>
+                </div>
+              </div>
               <pre><code>from dotenv import load_dotenv
-import os
+from flask import Flask
+
+from config import Config
+from app.extensions import init_extensions
+from app.routes.auth_routes import auth_bp
+from app.routes.task_routes import task_bp
 
 load_dotenv()
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
-app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")</code></pre>
+
+app = Flask(__name__)
+app.config.from_object(Config)
+init_extensions(app)
+
+app.register_blueprint(auth_bp)
+app.register_blueprint(task_bp)</code></pre>
+              <div class="mt-auto pt-5 flex">
+                <button type="button" onclick="openInfoModal('bootstrap')" class="code-action w-full justify-center sm:w-auto" aria-label="Abrir mais detalhes sobre app.py">
+                  <i data-lucide="book-open-text" class="w-4 h-4"></i>
+                  <span>Saiba mais</span>
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -282,52 +710,116 @@ app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")</code></pre>
         <section id="step-auth" class="step-content space-y-6">
           <div class="border-b border-border pb-6">
             <h2 class="text-3xl font-bold text-white">Cadastro e Login</h2>
-            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Esse menu explica como o usuário entra no sistema e como a API passa a reconhecer a identidade dele nas rotas protegidas.</p>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">O fluxo de autenticação fica mais limpo quando o model do usuário, o controller e a rota estão em arquivos separados.</p>
           </div>
-          <div class="grid gap-6 lg:grid-cols-2">
-            <div class="rounded-2xl border border-border bg-card/70 p-6">
-              <h3 class="mb-4 text-lg font-semibold text-white">Cadastro</h3>
-              <pre><code>@auth_bp.post("/register")
+          <div class="grid learning-grid gap-6 md:grid-cols-2">
+            <div class="learning-card rounded-2xl border border-border bg-card/70 p-6">
+              <h3 class="mb-4 text-lg font-semibold text-white">app/models/user.py</h3>
+              <pre><code>from app.extensions import db
+
+class User(db.Model):
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)</code></pre>
+            </div>
+            <div class="learning-card rounded-2xl border border-border bg-card/70 p-6">
+              <h3 class="mb-4 text-lg font-semibold text-white">app/controllers/auth_controller.py</h3>
+              <pre><code>from flask import request
+from flask_jwt_extended import create_access_token
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from app.extensions import db
+from app.models.user import User
+
 def register():
     data = request.get_json()
-    user = User(username=data["username"])
-    user.password_hash = generate_password_hash(data["password"])
+    user = User(
+        username=data["username"],
+        password_hash=generate_password_hash(data["password"])
+    )
     db.session.add(user)
     db.session.commit()
-    return {"message": "usuário criado"}, 201</code></pre>
-            </div>
-            <div class="rounded-2xl border border-border bg-card/70 p-6">
-              <h3 class="mb-4 text-lg font-semibold text-white">Login</h3>
-              <pre><code>@auth_bp.post("/login")
+    return {"message": "usuário criado"}, 201
+
 def login():
     data = request.get_json()
     user = User.query.filter_by(username=data["username"]).first()
+
+    if not user or not check_password_hash(user.password_hash, data["password"]):
+        return {"message": "credenciais inválidas"}, 401
+
     token = create_access_token(identity=str(user.id))
     return {"token": token}, 200</code></pre>
             </div>
+          </div>
+          <div class="learning-card rounded-2xl border border-border bg-card/70 p-6">
+            <h3 class="mb-4 text-lg font-semibold text-white">app/routes/auth_routes.py</h3>
+            <pre><code>from flask import Blueprint
+
+from app.controllers.auth_controller import login, register
+
+auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+
+auth_bp.post("/register")(register)
+auth_bp.post("/login")(login)</code></pre>
           </div>
         </section>
 
         <section id="step-tasks" class="step-content space-y-6">
           <div class="border-b border-border pb-6">
             <h2 class="text-3xl font-bold text-white">Criar tarefas</h2>
-            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Esse menu detalha como gravar título, descrição, data e valor sempre vinculando a tarefa ao usuário autenticado.</p>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Repita o mesmo padrão nas tarefas: model para a tabela, controller para a regra e um arquivo de rota para expor o endpoint.</p>
           </div>
-          <div class="rounded-2xl border border-border bg-card/70 p-6">
-            <pre><code>@tasks_bp.post("/")
+          <div class="grid learning-grid gap-6 md:grid-cols-2">
+            <div class="learning-card rounded-2xl border border-border bg-card/70 p-6">
+              <h3 class="mb-4 text-lg font-semibold text-white">app/models/task.py</h3>
+              <pre><code>from app.extensions import db
+
+class Task(db.Model):
+    __tablename__ = "tasks"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    value = db.Column(db.Float, default=0)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)</code></pre>
+            </div>
+            <div class="learning-card rounded-2xl border border-border bg-card/70 p-6">
+              <h3 class="mb-4 text-lg font-semibold text-white">app/controllers/task_controller.py</h3>
+              <pre><code>from datetime import datetime
+
+from flask import request
+from flask_jwt_extended import get_jwt_identity, jwt_required
+
+from app.extensions import db
+from app.models.task import Task
+
 @jwt_required()
 def create_task():
-    current_user_id = get_jwt_identity()
     data = request.get_json()
     task = Task(
         title=data["title"],
         date=datetime.strptime(data["date"], "%Y-%m-%d").date(),
         value=float(data.get("value", 0)),
-        user_id=current_user_id
+        user_id=int(get_jwt_identity())
     )
     db.session.add(task)
     db.session.commit()
     return {"message": "tarefa registrada"}, 201</code></pre>
+            </div>
+          </div>
+          <div class="learning-card rounded-2xl border border-border bg-card/70 p-6">
+            <h3 class="mb-4 text-lg font-semibold text-white">app/routes/task_routes.py</h3>
+            <pre><code>from flask import Blueprint
+
+from app.controllers.task_controller import create_task, get_tasks_summary
+
+task_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
+
+task_bp.post("/")(create_task)
+task_bp.get("/summary")(get_tasks_summary)</code></pre>
           </div>
         </section>
 
@@ -342,7 +834,9 @@ def create_task():
             <div class="rounded-2xl border border-border bg-card/70 p-6"><h3 class="text-lg font-semibold text-white">3. Total</h3><p class="mt-3 text-sm leading-7 text-muted">`count()` conta tarefas e `sum()` devolve o valor consolidado.</p></div>
           </div>
           <div class="rounded-2xl border border-border bg-card/70 p-6">
-            <pre><code>@tasks_bp.get("/summary")
+            <h3 class="mb-4 text-lg font-semibold text-white">app/controllers/task_controller.py</h3>
+            <pre><code>from sqlalchemy import func
+
 @jwt_required()
 def get_tasks_summary():
     current_user_id = get_jwt_identity()
@@ -371,14 +865,119 @@ def get_tasks_summary():
 
         <section id="step-reference" class="step-content space-y-6">
           <div class="border-b border-border pb-6">
-            <h2 class="text-3xl font-bold text-white">Rotas finais</h2>
-            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Resumo final da documentação para servir como checklist da implementação.</p>
+            <h2 class="text-3xl font-bold text-white">Mapa final dos arquivos</h2>
+            <p class="mt-3 max-w-3xl text-sm leading-8 text-muted">Checklist final com os 9 arquivos do núcleo da API e o `.env` como apoio. Os cards abaixo ficaram mais limpos, e o papel de cada arquivo abre em <span class="text-white font-semibold">Saiba mais</span>.</p>
           </div>
-          <div class="space-y-4">
-            <div class="rounded-2xl border border-border bg-card/70 p-5"><p class="text-sm text-slate-300"><span class="font-mono text-white">POST /auth/register</span> cria o usuário.</p></div>
-            <div class="rounded-2xl border border-border bg-card/70 p-5"><p class="text-sm text-slate-300"><span class="font-mono text-white">POST /auth/login</span> valida credenciais e devolve token.</p></div>
-            <div class="rounded-2xl border border-border bg-card/70 p-5"><p class="text-sm text-slate-300"><span class="font-mono text-white">POST /tasks</span> grava tarefa para o usuário autenticado.</p></div>
-            <div class="rounded-2xl border border-border bg-card/70 p-5"><p class="text-sm text-slate-300"><span class="font-mono text-white">GET /tasks/summary</span> calcula total por usuário e data.</p></div>
+          <div class="rounded-2xl border border-accent/15 bg-accent/10 p-5">
+            <p class="text-sm leading-7 text-slate-200"><span class="font-semibold text-white">Contagem final:</span> `5` pastas, `9` arquivos principais e `1` arquivo de ambiente (`.env`).</p>
+          </div>
+          <div class="file-map-grid">
+            <div class="file-map-card flex h-full flex-col rounded-2xl border border-border bg-card/70">
+              <div class="file-map-header flex items-center gap-3">
+                <span class="file-map-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-warm/20 bg-warm/10 text-warm"><i data-lucide="rocket" class="w-5 h-5"></i></span>
+                <div><h3 class="file-map-title font-semibold text-white">app.py</h3><p class="file-map-meta">Entrada</p></div>
+              </div>
+              <div class="file-map-actions"><button type="button" onclick="openInfoModal('bootstrap')" class="code-action"><i data-lucide="book-open-text" class="w-4 h-4"></i><span>Saiba mais</span></button></div>
+            </div>
+            <div class="file-map-card flex h-full flex-col rounded-2xl border border-border bg-card/70">
+              <div class="file-map-header flex items-center gap-3">
+                <span class="file-map-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-accent/15 bg-accent/10 text-accent"><i data-lucide="sliders-horizontal" class="w-5 h-5"></i></span>
+                <div><h3 class="file-map-title font-semibold text-white">config.py</h3><p class="file-map-meta">Configuracao</p></div>
+              </div>
+              <div class="file-map-actions"><button type="button" onclick="openInfoModal('config')" class="code-action"><i data-lucide="book-open-text" class="w-4 h-4"></i><span>Saiba mais</span></button></div>
+            </div>
+            <div class="file-map-card flex h-full flex-col rounded-2xl border border-border bg-card/70">
+              <div class="file-map-header flex items-center gap-3">
+                <span class="file-map-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white"><i data-lucide="shield" class="w-5 h-5"></i></span>
+                <div><h3 class="file-map-title font-semibold text-white">.env</h3><p class="file-map-meta">Ambiente</p></div>
+              </div>
+              <div class="file-map-actions"><button type="button" onclick="openInfoModal('env')" class="code-action"><i data-lucide="book-open-text" class="w-4 h-4"></i><span>Saiba mais</span></button></div>
+            </div>
+            <div class="file-map-card flex h-full flex-col rounded-2xl border border-border bg-card/70">
+              <div class="file-map-header flex items-center gap-3">
+                <span class="file-map-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-info/20 bg-info/10 text-info"><i data-lucide="plug-zap" class="w-5 h-5"></i></span>
+                <div><h3 class="file-map-title font-semibold text-white">app/extensions.py</h3><p class="file-map-meta">Conexao</p></div>
+              </div>
+              <div class="file-map-actions"><button type="button" onclick="openInfoModal('extensions')" class="code-action"><i data-lucide="book-open-text" class="w-4 h-4"></i><span>Saiba mais</span></button></div>
+            </div>
+            <div class="file-map-card flex h-full flex-col rounded-2xl border border-border bg-card/70">
+              <div class="file-map-header flex items-center gap-3">
+                <span class="file-map-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white"><i data-lucide="user" class="w-5 h-5"></i></span>
+                <div><h3 class="file-map-title font-semibold text-white">app/models/user.py</h3><p class="file-map-meta">Model</p></div>
+              </div>
+              <div class="file-map-actions"><button type="button" onclick="openInfoModal('user_model')" class="code-action"><i data-lucide="book-open-text" class="w-4 h-4"></i><span>Saiba mais</span></button></div>
+            </div>
+            <div class="file-map-card flex h-full flex-col rounded-2xl border border-border bg-card/70">
+              <div class="file-map-header flex items-center gap-3">
+                <span class="file-map-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white"><i data-lucide="layers-3" class="w-5 h-5"></i></span>
+                <div><h3 class="file-map-title font-semibold text-white">app/models/task.py</h3><p class="file-map-meta">Model</p></div>
+              </div>
+              <div class="file-map-actions"><button type="button" onclick="openInfoModal('task_model')" class="code-action"><i data-lucide="book-open-text" class="w-4 h-4"></i><span>Saiba mais</span></button></div>
+            </div>
+            <div class="file-map-card flex h-full flex-col rounded-2xl border border-border bg-card/70">
+              <div class="file-map-header flex items-center gap-3">
+                <span class="file-map-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white"><i data-lucide="git-branch-plus" class="w-5 h-5"></i></span>
+                <div><h3 class="file-map-title font-semibold text-white">app/controllers/auth_controller.py</h3><p class="file-map-meta">Controller</p></div>
+              </div>
+              <div class="file-map-actions"><button type="button" onclick="openInfoModal('auth_controller')" class="code-action"><i data-lucide="book-open-text" class="w-4 h-4"></i><span>Saiba mais</span></button></div>
+            </div>
+            <div class="file-map-card flex h-full flex-col rounded-2xl border border-border bg-card/70">
+              <div class="file-map-header flex items-center gap-3">
+                <span class="file-map-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white"><i data-lucide="calculator" class="w-5 h-5"></i></span>
+                <div><h3 class="file-map-title font-semibold text-white">app/controllers/task_controller.py</h3><p class="file-map-meta">Controller</p></div>
+              </div>
+              <div class="file-map-actions"><button type="button" onclick="openInfoModal('task_controller')" class="code-action"><i data-lucide="book-open-text" class="w-4 h-4"></i><span>Saiba mais</span></button></div>
+            </div>
+            <div class="file-map-card flex h-full flex-col rounded-2xl border border-border bg-card/70">
+              <div class="file-map-header flex items-center gap-3">
+                <span class="file-map-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white"><i data-lucide="file-stack" class="w-5 h-5"></i></span>
+                <div><h3 class="file-map-title font-semibold text-white">app/routes/auth_routes.py</h3><p class="file-map-meta">Rotas</p></div>
+              </div>
+              <div class="file-map-actions"><button type="button" onclick="openInfoModal('auth_routes')" class="code-action"><i data-lucide="book-open-text" class="w-4 h-4"></i><span>Saiba mais</span></button></div>
+            </div>
+            <div class="file-map-card flex h-full flex-col rounded-2xl border border-border bg-card/70">
+              <div class="file-map-header flex items-center gap-3">
+                <span class="file-map-icon inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white"><i data-lucide="file-stack" class="w-5 h-5"></i></span>
+                <div><h3 class="file-map-title font-semibold text-white">app/routes/task_routes.py</h3><p class="file-map-meta">Rotas</p></div>
+              </div>
+              <div class="file-map-actions"><button type="button" onclick="openInfoModal('task_routes')" class="code-action"><i data-lucide="book-open-text" class="w-4 h-4"></i><span>Saiba mais</span></button></div>
+            </div>
+          </div>
+          <div class="rounded-2xl border border-border bg-card/70 p-6">
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h3 class="text-lg font-semibold text-white">Endpoints finais</h3>
+              <span class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-muted">4 rotas</span>
+            </div>
+            <div class="endpoint-list">
+              <div class="endpoint-card">
+                <div class="endpoint-top">
+                  <span class="http-badge http-badge-post">POST</span>
+                  <span class="endpoint-path">/auth/register</span>
+                </div>
+                <p class="endpoint-target"><span class="endpoint-kicker">Controller</span><br>app/controllers/auth_controller.py::register</p>
+              </div>
+              <div class="endpoint-card">
+                <div class="endpoint-top">
+                  <span class="http-badge http-badge-post">POST</span>
+                  <span class="endpoint-path">/auth/login</span>
+                </div>
+                <p class="endpoint-target"><span class="endpoint-kicker">Controller</span><br>app/controllers/auth_controller.py::login</p>
+              </div>
+              <div class="endpoint-card">
+                <div class="endpoint-top">
+                  <span class="http-badge http-badge-post">POST</span>
+                  <span class="endpoint-path">/tasks/</span>
+                </div>
+                <p class="endpoint-target"><span class="endpoint-kicker">Controller</span><br>app/controllers/task_controller.py::create_task</p>
+              </div>
+              <div class="endpoint-card">
+                <div class="endpoint-top">
+                  <span class="http-badge http-badge-get">GET</span>
+                  <span class="endpoint-path">/tasks/summary</span>
+                </div>
+                <p class="endpoint-target"><span class="endpoint-kicker">Controller</span><br>app/controllers/task_controller.py::get_tasks_summary</p>
+              </div>
+            </div>
           </div>
         </section>
       </div>
@@ -409,6 +1008,24 @@ def get_tasks_summary():
     </div>
   </div>
 
+  <div id="info-modal" class="fixed inset-0 z-50 hidden bg-slate-950/90 p-4 md:p-6" onclick="handleInfoModalBackdrop(event)">
+    <div class="mx-auto flex h-full max-w-3xl flex-col rounded-3xl border border-border bg-panel shadow-2xl shadow-black/50">
+      <div class="flex items-center justify-between gap-3 border-b border-border px-4 py-4 md:px-6">
+        <div class="min-w-0">
+          <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-accent">Mais Detalhes</p>
+          <h3 id="info-modal-title" class="truncate text-base font-semibold text-white md:text-lg">Explicação</h3>
+        </div>
+        <button type="button" onclick="closeInfoModal()" class="code-action" aria-label="Fechar detalhes">
+          <i data-lucide="x" class="w-4 h-4"></i>
+          <span>Fechar</span>
+        </button>
+      </div>
+      <div class="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-6 md:py-6">
+        <div id="info-modal-body" class="space-y-4"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const drawer = document.getElementById("sidebar-drawer");
     const backdrop = document.getElementById("sidebar-backdrop");
@@ -416,11 +1033,205 @@ def get_tasks_summary():
     const codeModalTitle = document.getElementById("code-modal-title");
     const codeModalCode = document.getElementById("code-modal-code");
     const codeModalCopy = document.getElementById("code-modal-copy");
+    const infoModal = document.getElementById("info-modal");
+    const infoModalTitle = document.getElementById("info-modal-title");
+    const infoModalBody = document.getElementById("info-modal-body");
+    const infoStepLabels = ["O que é", "Por que importa", "Como fixar melhor"];
+    const infoStepIcons = ["book-open-text", "sparkles", "graduation-cap"];
+    const infoModalContent = {
+      config: {
+        icon: "sliders-horizontal",
+        lead: "Aqui vivem as decisões que valem para toda a aplicação.",
+        title: "config.py em linguagem simples",
+        paragraphs: [
+          "Pense no `config.py` como o painel central de ajustes da aplicação. Ele reúne o que a API precisa saber para funcionar, como a conexão com o banco e a chave usada na autenticação.",
+          "Isso evita espalhar configurações em vários arquivos. Quando a aplicação muda de ambiente, como de desenvolvimento para produção, você altera a origem desses valores e mantém o restante do projeto estável.",
+          "Para aprendizado, esse arquivo ajuda a separar o que é configuração global do que é regra de negócio. Essa divisão deixa a manutenção muito mais previsível."
+        ]
+      },
+      extensions: {
+        icon: "plug-zap",
+        lead: "Esse arquivo conecta recursos que vários módulos vão compartilhar.",
+        title: "app/extensions.py em linguagem simples",
+        paragraphs: [
+          "O `app/extensions.py` existe para criar e guardar os objetos compartilhados da aplicação, como `db` e `jwt`, sem depender de um arquivo específico desde o começo.",
+          "Na prática, ele evita importações confusas e reduz o acoplamento. Em vez de inicializar o banco e o JWT em vários lugares, tudo nasce em um ponto central e depois é conectado à app.",
+          "Para quem está estudando Flask, esse padrão facilita entender o ciclo da aplicação: primeiro você declara a ferramenta, depois conecta essa ferramenta dentro da fábrica ou do `app.py`."
+        ]
+      },
+      bootstrap: {
+        icon: "rocket",
+        lead: "É o ponto de partida que monta a API na ordem correta.",
+        title: "app.py em linguagem simples",
+        paragraphs: [
+          "O `app.py` é o ponto de partida da API. Ele liga as peças principais: carrega variáveis de ambiente, aplica a configuração, inicializa extensões e registra as rotas.",
+          "Em termos práticos, ele não deveria concentrar a regra de negócio. O papel dele é montar a aplicação e entregar uma base pronta para que controllers e models façam o trabalho certo.",
+          "Esse arquivo é importante para aprendizagem porque mostra a ordem correta da montagem: carregar ambiente, configurar, conectar extensões e só depois expor os módulos da API."
+        ]
+      },
+      env: {
+        icon: "shield",
+        lead: "O `.env` guarda o que é sensível e muda de ambiente para ambiente.",
+        title: ".env em linguagem simples",
+        paragraphs: [
+          "Pense no `.env` como um cofre de variáveis. Ele guarda valores como a URL do banco, chaves secretas e ajustes que não devem ficar escritos direto nos arquivos Python.",
+          "Isso protege o projeto e facilita a troca entre desenvolvimento, homologação e produção. O código continua igual, mas os valores carregados podem mudar conforme o ambiente.",
+          "Na prática, ele costuma ser lido logo no início da aplicação com `load_dotenv()`. O ideal é manter esse arquivo fora do versionamento para não expor dados sensíveis."
+        ]
+      },
+      user_model: {
+        icon: "user",
+        lead: "Esse model define como o usuário existe dentro do banco de dados.",
+        title: "app/models/user.py em linguagem simples",
+        paragraphs: [
+          "O `user.py` descreve a estrutura da tabela de usuários. É nele que você define campos como `id`, `username` e `password_hash`.",
+          "Esse arquivo é importante porque ele representa a identidade de quem usa a API. Toda autenticação e relacionamento com tarefas depende de um model de usuário bem definido.",
+          "Para aprender melhor, pense assim: o model não cuida da tela nem da rota. Ele só descreve como os dados são armazenados e recuperados."
+        ]
+      },
+      task_model: {
+        icon: "layers-3",
+        lead: "Esse model descreve como cada tarefa é salva e ligada ao usuário.",
+        title: "app/models/task.py em linguagem simples",
+        paragraphs: [
+          "O `task.py` representa a tabela de tarefas no banco. Nele ficam os campos que cada tarefa precisa ter, como título, data, valor e o `user_id`.",
+          "O papel dele é tornar explícita a ligação entre a tarefa e o dono daquela informação. Isso é o que permite manter os dados organizados por usuário.",
+          "Na leitura didática, o model de tarefa responde à pergunta: quais dados formam uma tarefa e como o banco reconhece esse registro."
+        ]
+      },
+      auth_controller: {
+        icon: "git-branch-plus",
+        lead: "Aqui vive a regra de negócio do cadastro e do login.",
+        title: "app/controllers/auth_controller.py em linguagem simples",
+        paragraphs: [
+          "O `auth_controller.py` recebe a entrada da rota e executa a lógica de autenticação. Ele valida os dados, cria o usuário e gera o token quando o login está correto.",
+          "Esse arquivo existe para impedir que a rota fique pesada. A URL apenas chama a função certa; quem decide o que acontece é o controller.",
+          "Para aprendizagem, essa separação é valiosa porque mostra onde mora a regra real. Se amanhã a forma de autenticar mudar, a alteração tende a ficar concentrada aqui."
+        ]
+      },
+      task_controller: {
+        icon: "calculator",
+        lead: "Esse controller organiza a regra de criação e resumo das tarefas.",
+        title: "app/controllers/task_controller.py em linguagem simples",
+        paragraphs: [
+          "O `task_controller.py` concentra as ações ligadas às tarefas. Ele cria novos registros, associa o usuário autenticado e também monta o resumo calculado por data.",
+          "A vantagem dessa separação é manter a lógica de negócio fora das rotas. Isso deixa a manutenção mais simples e torna o comportamento da API mais previsível.",
+          "Pensando em estudo, esse controller mostra bem a diferença entre gravar dados e consultar dados agregados. As duas ações pertencem ao mesmo domínio, mas têm responsabilidades diferentes."
+        ]
+      },
+      auth_routes: {
+        icon: "file-stack",
+        lead: "Esse arquivo conecta as URLs de autenticação às funções certas.",
+        title: "app/routes/auth_routes.py em linguagem simples",
+        paragraphs: [
+          "O `auth_routes.py` é o mapa das rotas de autenticação. Ele define quais URLs existem e para qual função do controller cada uma delas aponta.",
+          "O ganho aqui é organização. Em vez de misturar caminho HTTP com regra de negócio, você mantém a rota em um arquivo e a lógica em outro.",
+          "Para aprender com clareza, pense assim: rota é endereço. Ela não decide tudo sozinha, apenas encaminha a requisição para o lugar correto."
+        ]
+      },
+      task_routes: {
+        icon: "file-stack",
+        lead: "Esse arquivo conecta as URLs de tarefas aos controllers corretos.",
+        title: "app/routes/task_routes.py em linguagem simples",
+        paragraphs: [
+          "O `task_routes.py` define os endpoints ligados às tarefas, como criação e consulta de resumo. Ele funciona como a porta de entrada desse módulo.",
+          "Esse arquivo ajuda a manter o projeto escalável. Quando novas rotas de tarefas surgirem, elas entram nesse ponto sem bagunçar outros módulos.",
+          "Na prática de aprendizagem, ele reforça a arquitetura por camadas: primeiro a rota recebe, depois o controller executa e por fim o model persiste ou consulta."
+        ]
+      }
+    };
 
     function syncBodyOverflow() {
       const sidebarOpen = drawer.classList.contains("open");
-      const modalOpen = !codeModal.classList.contains("hidden");
-      document.body.style.overflow = sidebarOpen || modalOpen ? "hidden" : "";
+      const codeModalOpen = !codeModal.classList.contains("hidden");
+      const infoModalOpen = !infoModal.classList.contains("hidden");
+      document.body.style.overflow = sidebarOpen || codeModalOpen || infoModalOpen ? "hidden" : "";
+    }
+
+    function renderInfoModal(content) {
+      infoModalBody.innerHTML = "";
+
+      const leadCard = document.createElement("div");
+      leadCard.className = "detail-lead";
+
+      const leadWrap = document.createElement("div");
+      leadWrap.className = "detail-panel";
+
+      const leadIconWrap = document.createElement("span");
+      leadIconWrap.className = "detail-icon";
+      const leadIcon = document.createElement("i");
+      leadIcon.setAttribute("data-lucide", content.icon || "book-open-text");
+      leadIcon.className = "w-4 h-4";
+      leadIconWrap.appendChild(leadIcon);
+
+      const leadCopy = document.createElement("div");
+      leadCopy.className = "detail-copy";
+
+      const leadLabel = document.createElement("p");
+      leadLabel.className = "detail-kicker";
+      leadLabel.textContent = "Leitura guiada";
+
+      const leadText = document.createElement("p");
+      leadText.className = "detail-text";
+      leadText.textContent = content.lead || "";
+
+      leadCopy.appendChild(leadLabel);
+      leadCopy.appendChild(leadText);
+      leadWrap.appendChild(leadIconWrap);
+      leadWrap.appendChild(leadCopy);
+      leadCard.appendChild(leadWrap);
+      infoModalBody.appendChild(leadCard);
+
+      content.paragraphs.forEach((paragraph, index) => {
+        const panel = document.createElement("div");
+        panel.className = "detail-panel";
+
+        const iconWrap = document.createElement("span");
+        iconWrap.className = "detail-icon";
+        const icon = document.createElement("i");
+        icon.setAttribute("data-lucide", infoStepIcons[index % infoStepIcons.length]);
+        icon.className = "w-4 h-4";
+        iconWrap.appendChild(icon);
+
+        const copy = document.createElement("div");
+        copy.className = "detail-copy";
+
+        const label = document.createElement("p");
+        label.className = "detail-kicker";
+        label.textContent = infoStepLabels[index] || "Detalhe";
+
+        const text = document.createElement("p");
+        text.className = "detail-text";
+        text.textContent = paragraph;
+
+        copy.appendChild(label);
+        copy.appendChild(text);
+        panel.appendChild(iconWrap);
+        panel.appendChild(copy);
+        infoModalBody.appendChild(panel);
+      });
+    }
+
+    function openInfoModal(key) {
+      const content = infoModalContent[key];
+      if (!content) return;
+
+      infoModalTitle.textContent = content.title;
+      renderInfoModal(content);
+      infoModal.classList.remove("hidden");
+      syncBodyOverflow();
+      lucide.createIcons();
+    }
+
+    function closeInfoModal() {
+      infoModal.classList.add("hidden");
+      infoModalTitle.textContent = "Explicação";
+      infoModalBody.innerHTML = "";
+      syncBodyOverflow();
+    }
+
+    function handleInfoModalBackdrop(event) {
+      if (event.target === infoModal) closeInfoModal();
     }
 
     function openSidebar() {
@@ -572,6 +1383,10 @@ def get_tasks_summary():
       if (event.key !== "Escape") return;
       if (!codeModal.classList.contains("hidden")) {
         closeCodeModal();
+        return;
+      }
+      if (!infoModal.classList.contains("hidden")) {
+        closeInfoModal();
         return;
       }
       closeSidebar();

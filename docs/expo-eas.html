@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Treinamento Expo EAS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: "#08111f",
+            panel: "#122033",
+            border: "#29435f",
+            text: "#e2e8f0",
+            accent: "#38bdf8",
+            success: "#22c55e",
+            warm: "#f59e0b"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --font-body: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+      --font-display: "Sora", "Segoe UI", sans-serif;
+    }
+    body {
+      font-family: var(--font-body);
+      background:
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.16), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(34, 197, 94, 0.12), transparent 34%),
+        #08111f;
+    }
+    h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.03em; }
+    .step { display: none; }
+    .step.active { display: block; }
+    .nav-item.active { background: rgba(56, 189, 248, 0.14); border-color: rgba(56, 189, 248, 0.34); }
+    #sidebar-drawer {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 40;
+      width: min(20rem, 86vw);
+      transform: translateX(-100%);
+      transition: transform 0.22s ease;
+    }
+    #sidebar-drawer.open { transform: translateX(0); }
+    @media (min-width: 768px) {
+      #sidebar-drawer { position: static; width: 18rem; height: 100vh; transform: translateX(0); }
+    }
+    pre {
+      margin: 0;
+      overflow-x: auto;
+      border: 1px solid #29435f;
+      border-radius: 1rem;
+      background: rgba(8, 17, 31, 0.9);
+      padding: 1rem;
+    }
+    code {
+      font-family: "Fira Code", "Courier New", monospace;
+      font-size: 0.88rem;
+      color: #dbeafe;
+    }
+  </style>
+</head>
+<body class="min-h-screen overflow-x-hidden text-text md:flex">
+  <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-950/70 md:hidden" onclick="closeSidebar()"></div>
+
+  <aside id="sidebar-drawer" class="flex h-screen flex-col border-r border-border bg-panel shadow-2xl">
+    <div class="border-b border-border bg-base/70 p-6">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <div class="mb-1 flex items-center gap-2">
+            <i data-lucide="smartphone-charging" class="h-6 w-6 text-accent"></i>
+            <h1 class="text-lg font-bold text-white">Expo EAS</h1>
+          </div>
+          <p class="text-xs text-slate-300">Treinamento guiado para build em nuvem</p>
+        </div>
+        <button type="button" onclick="closeSidebar()" class="rounded-lg border border-white/10 bg-white/5 p-2 text-slate-300 md:hidden">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+    </div>
+
+    <nav class="flex-1 space-y-2 overflow-y-auto p-4">
+      <button type="button" data-step="step-1" onclick="showStep('step-1')" class="nav-item active w-full rounded-2xl border border-transparent bg-base/40 px-4 py-3 text-left">
+        <span class="block text-sm font-semibold text-white">01. O que e a stack</span>
+        <span class="block text-xs text-slate-300">React, Expo, Node e JS</span>
+      </button>
+      <button type="button" data-step="step-2" onclick="showStep('step-2')" class="nav-item w-full rounded-2xl border border-transparent bg-base/40 px-4 py-3 text-left">
+        <span class="block text-sm font-semibold text-white">02. Introducao ao EAS</span>
+        <span class="block text-xs text-slate-300">O que resolve e comparacao</span>
+      </button>
+      <button type="button" data-step="step-3" onclick="showStep('step-3')" class="nav-item w-full rounded-2xl border border-transparent bg-base/40 px-4 py-3 text-left">
+        <span class="block text-sm font-semibold text-white">03. O que e necessario</span>
+        <span class="block text-xs text-slate-300">Conta, ambiente e acessos</span>
+      </button>
+      <button type="button" data-step="step-4" onclick="showStep('step-4')" class="nav-item w-full rounded-2xl border border-transparent bg-base/40 px-4 py-3 text-left">
+        <span class="block text-sm font-semibold text-white">04. Passos para configurar</span>
+        <span class="block text-xs text-slate-300">Fluxo pratico</span>
+      </button>
+    </nav>
+  </aside>
+
+  <main class="min-h-screen flex-1 overflow-y-auto">
+    <div class="sticky top-0 z-20 flex items-center justify-between border-b border-white/5 bg-base/85 px-4 py-4 backdrop-blur md:hidden">
+      <button type="button" onclick="openSidebar()" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white">
+        <i data-lucide="menu" class="h-4 w-4"></i>
+        <span>Menu</span>
+      </button>
+      <span class="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Expo EAS</span>
+    </div>
+
+    <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+      <section id="step-1" class="step active space-y-6">
+        <div class="rounded-3xl border border-border bg-panel/75 p-6 sm:p-8">
+          <div class="flex flex-wrap gap-2">
+            <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-accent">5 cards base</span>
+            <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-200">4 etapas</span>
+          </div>
+          <h2 class="mt-4 text-3xl font-bold text-white sm:text-4xl">Antes do EAS, voce precisa ligar as pecas da stack.</h2>
+          <p class="mt-3 max-w-4xl text-base leading-8 text-slate-300">JavaScript escreve a regra, React organiza a interface, React Native leva isso ao celular, Expo acelera o projeto e o EAS transforma o app em build distribuivel.</p>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <div class="flex items-center gap-3"><i data-lucide="component" class="h-5 w-5 text-accent"></i><h3 class="text-lg font-bold text-white">React</h3></div>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Organiza componentes, estado e interface reutilizavel.</p>
+            <button type="button" class="info-trigger mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white" data-info-title="React" data-info-body="Biblioteca de interface baseada em componentes.||No treinamento: ajuda voce a entender a camada visual do app.||Ligacao: React entrega a base da interface que depois vai para o mobile.">
+              <i data-lucide="sparkles" class="h-4 w-4"></i><span>Saiba mais</span>
+            </button>
+          </div>
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <div class="flex items-center gap-3"><i data-lucide="smartphone" class="h-5 w-5 text-success"></i><h3 class="text-lg font-bold text-white">React Native</h3></div>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Renderiza componentes nativos em iOS e Android.</p>
+            <button type="button" class="info-trigger mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white" data-info-title="React Native" data-info-body="Camada mobile do ecossistema React.||No treinamento: e o terreno onde o app roda no aparelho.||Ligacao: o build final do EAS gera binarios para esse projeto.">
+              <i data-lucide="sparkles" class="h-4 w-4"></i><span>Saiba mais</span>
+            </button>
+          </div>
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <div class="flex items-center gap-3"><i data-lucide="rocket" class="h-5 w-5 text-warm"></i><h3 class="text-lg font-bold text-white">Expo</h3></div>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Entrega um caminho mais rapido para iniciar e evoluir o app.</p>
+            <button type="button" class="info-trigger mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white" data-info-title="Expo" data-info-body="Toolkit de produtividade sobre React Native.||No treinamento: reduz atrito no setup e acelera a primeira entrega.||Ligacao: o EAS faz parte da plataforma Expo.">
+              <i data-lucide="sparkles" class="h-4 w-4"></i><span>Saiba mais</span>
+            </button>
+          </div>
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <div class="flex items-center gap-3"><i data-lucide="terminal-square" class="h-5 w-5 text-white"></i><h3 class="text-lg font-bold text-white">Node.js</h3></div>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Executa npm, create-expo-app e a EAS CLI no seu computador.</p>
+            <button type="button" class="info-trigger mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white" data-info-title="Node.js" data-info-body="Runtime do ambiente local.||No treinamento: e o primeiro requisito de instalacao.||Sem ele: nao existe CLI nem instalacao de dependencias.">
+              <i data-lucide="sparkles" class="h-4 w-4"></i><span>Saiba mais</span>
+            </button>
+          </div>
+          <div class="rounded-3xl border border-border bg-base/55 p-5 md:col-span-2 xl:col-span-1">
+            <div class="flex items-center gap-3"><i data-lucide="file-code-2" class="h-5 w-5 text-accent"></i><h3 class="text-lg font-bold text-white">JavaScript</h3></div>
+            <p class="mt-3 text-sm leading-7 text-slate-300">E a linguagem que conecta o app, as regras e parte do tooling.</p>
+            <button type="button" class="info-trigger mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white" data-info-title="JavaScript" data-info-body="Linguagem base do ecossistema.||No treinamento: une teoria do app e pratica de terminal.||Ligacao: React, Expo e muitas ferramentas do fluxo passam por JavaScript.">
+              <i data-lucide="sparkles" class="h-4 w-4"></i><span>Saiba mais</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="step-2" class="step space-y-6">
+        <div class="rounded-3xl border border-border bg-panel/75 p-6 sm:p-8">
+          <p class="text-sm font-bold uppercase tracking-[0.18em] text-accent">Introducao ao EAS</p>
+          <h2 class="mt-2 text-3xl font-bold text-white sm:text-4xl">EAS padroniza build, credenciais e caminho ate a distribuicao.</h2>
+          <p class="mt-3 max-w-4xl text-base leading-8 text-slate-300">Ele resolve a parte mais sensivel da esteira mobile: build consistente em nuvem, gerenciamento de assinatura, perfis de ambiente e integracao com distribuicao.</p>
+        </div>
+
+        <div class="grid gap-5 lg:grid-cols-2">
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <h3 class="text-xl font-bold text-white">O que ele resolve</h3>
+            <div class="mt-4 space-y-3">
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300"><strong class="text-white">Build em nuvem:</strong> voce nao depende do mesmo setup local para cada pessoa do time.</div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300"><strong class="text-white">Credenciais:</strong> o servico pode cuidar da assinatura Android e iOS.</div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300"><strong class="text-white">Perfis:</strong> o <code>eas.json</code> separa desenvolvimento, preview e producao.</div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300"><strong class="text-white">Distribuicao:</strong> voce sai mais rapido do codigo para testes internos e lojas.</div>
+            </div>
+          </div>
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-xl font-bold text-white">Comparacao com 2 alternativas</h3>
+              <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-200">Referencias</span>
+            </div>
+            <div class="mt-4 space-y-3">
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p class="text-sm font-semibold text-white">Codemagic</p>
+                <p class="mt-1 text-sm leading-7 text-slate-300">Boa opcao para um CI/CD mais amplo e customizado, com foco em varios stacks mobile.</p>
+                <a href="https://codemagic.io/" target="_blank" rel="noreferrer" class="mt-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-accent"><i data-lucide="external-link" class="h-3.5 w-3.5"></i><span>Site oficial</span></a>
+              </div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p class="text-sm font-semibold text-white">Bitrise</p>
+                <p class="mt-1 text-sm leading-7 text-slate-300">Aparece mais quando o time precisa de uma esteira mobile CI com pipelines e ambientes dedicados.</p>
+                <a href="https://bitrise.io/" target="_blank" rel="noreferrer" class="mt-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-accent"><i data-lucide="external-link" class="h-3.5 w-3.5"></i><span>Site oficial</span></a>
+              </div>
+              <div class="rounded-2xl border border-accent/25 bg-accent/10 p-4 text-sm leading-7 text-slate-200">Para projetos Expo ou React Native que querem sair rapido do setup para o build, o EAS tende a ser o caminho mais direto.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="step-3" class="step space-y-6">
+        <div class="rounded-3xl border border-border bg-panel/75 p-6 sm:p-8">
+          <p class="text-sm font-bold uppercase tracking-[0.18em] text-accent">Requisitos</p>
+          <h2 class="mt-2 text-3xl font-bold text-white sm:text-4xl">Conta certa e ambiente minimo deixam o treino fluido.</h2>
+          <p class="mt-3 max-w-4xl text-base leading-8 text-slate-300">O foco aqui e separar o que e obrigatorio ja no inicio do que so entra quando voce for publicar o app de verdade.</p>
+        </div>
+
+        <div class="grid gap-5 lg:grid-cols-2">
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <h3 class="text-xl font-bold text-white">Conta e acesso</h3>
+            <div class="mt-4 space-y-3">
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300"><strong class="text-white">Email ativo:</strong> centraliza login e recuperacao.</div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300"><strong class="text-white">Conta Expo:</strong> obrigatoria para usar EAS Build, Update e Submit.</div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300"><strong class="text-white">Conta Apple e Google:</strong> entram quando voce avanca para publicacao real.</div>
+            </div>
+          </div>
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <h3 class="text-xl font-bold text-white">Ambiente local</h3>
+            <div class="mt-4 space-y-3">
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300"><strong class="text-white">Node.js e npm:</strong> base de instalacao e execucao da CLI.</div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300"><strong class="text-white">Projeto Expo:</strong> e o caminho mais rapido para o primeiro treino com build.</div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300"><strong class="text-white">Terminal e internet:</strong> a CLI trabalha no terminal e o build sobe para a nuvem.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-3">
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <div class="flex items-center gap-3"><i data-lucide="monitor" class="h-5 w-5 text-accent"></i><h3 class="text-lg font-bold text-white">Windows</h3></div>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Otimo para Android e excelente para aprender EAS sem depender de um Mac local.</p>
+            <button type="button" class="info-trigger mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white" data-info-title="Windows no fluxo EAS" data-info-body="Boa porta de entrada para Node.js, npm e Android.||Com EAS, voce pode disparar build iOS sem ter um Mac local.||Limite: Xcode e iOS Simulator continuam fora do Windows.">
+              <i data-lucide="sparkles" class="h-4 w-4"></i><span>Saiba mais</span>
+            </button>
+          </div>
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <div class="flex items-center gap-3"><i data-lucide="laptop" class="h-5 w-5 text-white"></i><h3 class="text-lg font-bold text-white">macOS</h3></div>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Unico sistema que roda Xcode e iOS Simulator localmente.</p>
+            <button type="button" class="info-trigger mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white" data-info-title="macOS no fluxo EAS" data-info-body="Melhor escolha para validar iOS localmente.||Mesmo assim, o EAS ainda agrega padrao de build e gestao de credenciais.||E o ambiente mais completo para o ciclo iOS ponta a ponta.">
+              <i data-lucide="sparkles" class="h-4 w-4"></i><span>Saiba mais</span>
+            </button>
+          </div>
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <div class="flex items-center gap-3"><i data-lucide="terminal" class="h-5 w-5 text-success"></i><h3 class="text-lg font-bold text-white">Linux</h3></div>
+            <p class="mt-3 text-sm leading-7 text-slate-300">Funciona muito bem para automacao, terminal e times orientados a CI.</p>
+            <button type="button" class="info-trigger mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white" data-info-title="Linux no fluxo EAS" data-info-body="Otimo encaixe para terminal e automacao.||Atende muito bem o fluxo Android e o disparo de builds remotos.||Limite: iOS continua uma etapa remota do servico.">
+              <i data-lucide="sparkles" class="h-4 w-4"></i><span>Saiba mais</span>
+            </button>
+          </div>
+        </div>
+      </section>
+      <section id="step-4" class="step space-y-6">
+        <div class="rounded-3xl border border-border bg-panel/75 p-6 sm:p-8">
+          <p class="text-sm font-bold uppercase tracking-[0.18em] text-accent">Configuracao guiada</p>
+          <h2 class="mt-2 text-3xl font-bold text-white sm:text-4xl">O caminho mais seguro e instalar, autenticar e so depois buildar.</h2>
+          <p class="mt-3 max-w-4xl text-base leading-8 text-slate-300">A sequencia abaixo foi montada para virar um roteiro repetivel sempre que voce iniciar um novo projeto Expo.</p>
+        </div>
+
+        <div class="grid gap-5 lg:grid-cols-2">
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-accent">1. Verifique o ambiente</p>
+            <h3 class="mt-2 text-xl font-bold text-white">Confirme Node.js e npm</h3>
+            <div class="mt-4 rounded-2xl border border-border bg-slate-950/50 p-4">
+              <div class="mb-3 flex flex-wrap gap-2">
+                <button type="button" class="copy-trigger rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white" data-copy-target="code-node">Copiar</button>
+                <button type="button" class="expand-trigger rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white" data-expand-title="Verificando Node e npm" data-expand-target="code-node">Expandir</button>
+              </div>
+              <pre><code id="code-node">node -v
+npm -v</code></pre>
+            </div>
+          </div>
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-accent">2. Crie a base do app</p>
+            <h3 class="mt-2 text-xl font-bold text-white">Suba um novo projeto Expo</h3>
+            <div class="mt-4 rounded-2xl border border-border bg-slate-950/50 p-4">
+              <div class="mb-3 flex flex-wrap gap-2">
+                <button type="button" class="copy-trigger rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white" data-copy-target="code-create">Copiar</button>
+                <button type="button" class="expand-trigger rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white" data-expand-title="Criando um app Expo" data-expand-target="code-create">Expandir</button>
+              </div>
+              <pre><code id="code-create">npx create-expo-app@latest meu-app
+cd meu-app</code></pre>
+            </div>
+          </div>
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-accent">3. Instale a EAS CLI</p>
+            <h3 class="mt-2 text-xl font-bold text-white">Conecte o terminal ao servico</h3>
+            <div class="mt-4 rounded-2xl border border-border bg-slate-950/50 p-4">
+              <div class="mb-3 flex flex-wrap gap-2">
+                <button type="button" class="copy-trigger rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white" data-copy-target="code-login">Copiar</button>
+                <button type="button" class="expand-trigger rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white" data-expand-title="Instalando e autenticando a EAS CLI" data-expand-target="code-login">Expandir</button>
+              </div>
+              <pre><code id="code-login">npm install -g eas-cli
+eas login
+eas whoami</code></pre>
+            </div>
+          </div>
+          <div class="rounded-3xl border border-border bg-base/55 p-5">
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-accent">4. Configure e build</p>
+            <h3 class="mt-2 text-xl font-bold text-white">Gere o eas.json e faca o primeiro preview</h3>
+            <div class="mt-4 rounded-2xl border border-border bg-slate-950/50 p-4">
+              <div class="mb-3 flex flex-wrap gap-2">
+                <button type="button" class="copy-trigger rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white" data-copy-target="code-build">Copiar</button>
+                <button type="button" class="expand-trigger rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white" data-expand-title="Configurando e executando o primeiro build" data-expand-target="code-build">Expandir</button>
+              </div>
+              <pre><code id="code-build">eas build:configure
+npx expo install expo-dev-client
+eas build --platform android --profile preview</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-3xl border border-border bg-base/55 p-5">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-[0.18em] text-accent">Arquivo central</p>
+              <h3 class="mt-2 text-xl font-bold text-white">Exemplo minimo de <code>eas.json</code></h3>
+            </div>
+            <button type="button" class="info-trigger inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white" data-info-title="Como pensar o eas.json" data-info-body="Objetivo: separar ambientes de treino e release.||Leitura pratica: development para iterar, preview para compartilhar, production para release.||Valor real: o time para de depender de comandos soltos.">
+              <i data-lucide="sparkles" class="h-4 w-4"></i><span>Saiba mais</span>
+            </button>
+          </div>
+          <div class="mt-4 rounded-2xl border border-border bg-slate-950/50 p-4">
+            <div class="mb-3 flex flex-wrap gap-2">
+              <button type="button" class="copy-trigger rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white" data-copy-target="code-eas-json">Copiar</button>
+              <button type="button" class="expand-trigger rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white" data-expand-title="Exemplo de eas.json" data-expand-target="code-eas-json">Expandir</button>
+            </div>
+            <pre><code id="code-eas-json">{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="code-modal" class="fixed inset-0 z-50 hidden bg-slate-950/90 p-4 md:p-6" onclick="if(event.target===this)closeCodeModal()">
+    <div class="mx-auto flex h-full max-w-5xl flex-col rounded-3xl border border-border bg-panel shadow-2xl shadow-black/50">
+      <div class="flex items-center justify-between gap-3 border-b border-border px-4 py-4 md:px-6">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-300">Visualizacao expandida</p>
+          <h3 id="code-modal-title" class="text-base font-semibold text-white md:text-lg">Trecho de codigo</h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="code-modal-copy" type="button" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white">Copiar</button>
+          <button type="button" onclick="closeCodeModal()" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white">Fechar</button>
+        </div>
+      </div>
+      <div class="min-h-0 flex-1 p-4 md:p-6">
+        <pre class="h-full overflow-auto"><code id="code-modal-code"></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div id="info-modal" class="fixed inset-0 z-50 hidden bg-slate-950/90 p-4 md:p-6" onclick="if(event.target===this)closeInfoModal()">
+    <div class="mx-auto flex h-full max-w-3xl flex-col rounded-3xl border border-border bg-panel shadow-2xl shadow-black/50">
+      <div class="flex items-center justify-between gap-3 border-b border-border px-4 py-4 md:px-6">
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-accent">Mais detalhes</p>
+          <h3 id="info-modal-title" class="text-base font-semibold text-white md:text-lg">Explicacao</h3>
+        </div>
+        <button type="button" onclick="closeInfoModal()" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white">Fechar</button>
+      </div>
+      <div id="info-modal-body" class="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-5 md:px-6 md:py-6"></div>
+    </div>
+  </div>
+
+  <script>
+    const drawer = document.getElementById("sidebar-drawer");
+    const backdrop = document.getElementById("sidebar-backdrop");
+    const codeModal = document.getElementById("code-modal");
+    const codeModalTitle = document.getElementById("code-modal-title");
+    const codeModalCode = document.getElementById("code-modal-code");
+    const codeModalCopy = document.getElementById("code-modal-copy");
+    const infoModal = document.getElementById("info-modal");
+    const infoModalTitle = document.getElementById("info-modal-title");
+    const infoModalBody = document.getElementById("info-modal-body");
+
+    function syncBodyOverflow() {
+      const sidebarOpen = drawer.classList.contains("open");
+      const codeModalOpen = !codeModal.classList.contains("hidden");
+      const infoModalOpen = !infoModal.classList.contains("hidden");
+      document.body.style.overflow = sidebarOpen || codeModalOpen || infoModalOpen ? "hidden" : "";
+    }
+
+    function openSidebar() {
+      drawer.classList.add("open");
+      backdrop.classList.remove("hidden");
+      syncBodyOverflow();
+    }
+
+    function closeSidebar() {
+      drawer.classList.remove("open");
+      backdrop.classList.add("hidden");
+      syncBodyOverflow();
+    }
+
+    function showStep(stepId) {
+      document.querySelectorAll(".step").forEach((el) => el.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach((el) => el.classList.remove("active"));
+      const content = document.getElementById(stepId);
+      const trigger = document.querySelector('[data-step="' + stepId + '"]');
+      if (!content || !trigger) return;
+      content.classList.add("active");
+      trigger.classList.add("active");
+      const main = document.querySelector("main");
+      if (main) main.scrollTop = 0;
+      if (window.innerWidth < 768) closeSidebar();
+    }
+
+    function fallbackCopy(text) {
+      const temp = document.createElement("textarea");
+      temp.value = text;
+      temp.style.position = "absolute";
+      temp.style.left = "-9999px";
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand("copy");
+      document.body.removeChild(temp);
+    }
+
+    async function copyText(text, button) {
+      const original = button.textContent;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          fallbackCopy(text);
+        }
+        button.textContent = "Copiado";
+      } catch (error) {
+        button.textContent = "Falhou";
+      }
+      setTimeout(() => { button.textContent = original; }, 1500);
+    }
+
+    function openCodeModal(title, text) {
+      codeModalTitle.textContent = title;
+      codeModalCode.textContent = text;
+      codeModal.classList.remove("hidden");
+      codeModalCopy.onclick = () => copyText(text, codeModalCopy);
+      syncBodyOverflow();
+    }
+
+    function closeCodeModal() {
+      codeModal.classList.add("hidden");
+      codeModalCode.textContent = "";
+      syncBodyOverflow();
+    }
+
+    function openInfoModal(title, body) {
+      infoModalTitle.textContent = title;
+      infoModalBody.innerHTML = "";
+      const parts = String(body || "").split("||").map((item) => item.trim()).filter(Boolean);
+      parts.forEach((part) => {
+        const item = document.createElement("div");
+        item.className = "rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-8 text-slate-200";
+        item.textContent = part;
+        infoModalBody.appendChild(item);
+      });
+      infoModal.classList.remove("hidden");
+      syncBodyOverflow();
+    }
+
+    function closeInfoModal() {
+      infoModal.classList.add("hidden");
+      infoModalTitle.textContent = "Explicacao";
+      infoModalBody.innerHTML = "";
+      syncBodyOverflow();
+    }
+
+    document.querySelectorAll(".copy-trigger").forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = document.getElementById(button.dataset.copyTarget);
+        if (!target) return;
+        copyText(target.textContent, button);
+      });
+    });
+
+    document.querySelectorAll(".expand-trigger").forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = document.getElementById(button.dataset.expandTarget);
+        if (!target) return;
+        openCodeModal(button.dataset.expandTitle || "Trecho de codigo", target.textContent);
+      });
+    });
+
+    document.querySelectorAll(".info-trigger").forEach((button) => {
+      button.addEventListener("click", () => {
+        openInfoModal(button.dataset.infoTitle || "Explicacao", button.dataset.infoBody || "");
+      });
+    });
+
+    window.addEventListener("resize", () => {
+      if (window.innerWidth >= 768) closeSidebar();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      if (!codeModal.classList.contains("hidden")) return closeCodeModal();
+      if (!infoModal.classList.contains("hidden")) return closeInfoModal();
+      if (drawer.classList.contains("open")) closeSidebar();
+    });
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>
