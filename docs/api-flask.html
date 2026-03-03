@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tutorial: API com Flask</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: "#0f172a",
+            accent: "#10b981", /* Verde Emerald (Python/Flask) */
+            text: "#f8fafc",
+            muted: "#94a3b8",
+            card: "#1e293b",
+            border: "#334155",
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .bg-pattern {
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0),
+        radial-gradient(circle at 12px 12px, rgba(16, 185, 129, 0.1) 1px, transparent 0);
+      background-size: 24px 24px, 24px 24px;
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+    pre {
+      background-color: #0d1117;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      border: 1px solid #334155;
+      margin: 0;
+    }
+
+    code {
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 0.875rem;
+      color: #e2e8f0;
+    }
+
+    .step-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+    .step-content.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav-item.active { background-color: #10b981; color: white; border-color: #10b981; }
+    
+    .nav-group-content { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.22s ease; }
+    .nav-group.open .nav-group-content { grid-template-rows: 1fr; }
+    .nav-group-inner { overflow: hidden; }
+    .nav-group-toggle .chevron { transition: transform 0.22s ease; }
+    .nav-group.open .nav-group-toggle .chevron { transform: rotate(180deg); }
+
+    #sidebar-drawer {
+      position: fixed; inset: 0 auto 0 0; z-index: 40; width: min(20rem, 86vw);
+      transform: translateX(-100%); transition: transform 0.25s cubic-bezier(.4, 0, .2, 1);
+    }
+    #sidebar-drawer.open { transform: translateX(0); }
+    @media (min-width: 768px) {
+      #sidebar-drawer { position: static; width: 16rem; height: 100vh; transform: translateX(0); }
+    }
+    
+    /* Syntax Highlighting Python */
+    .py-kw { color: #ff7b72; font-weight: bold; }
+    .py-func { color: #d2a8ff; }
+    .py-str { color: #a5d6ff; }
+    .py-comment { color: #8b949e; font-style: italic; }
+    .py-dec { color: #79c0ff; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-base text-text bg-pattern flex overflow-x-hidden font-sans">
+
+  <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-950/70 md:hidden" onclick="closeSidebar()"></div>
+
+  <aside id="sidebar-drawer" class="bg-card border-r border-border flex flex-col h-screen shadow-xl">
+    <div class="p-6 border-b border-border bg-base/50 backdrop-blur-sm">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <i data-lucide="server" class="text-accent w-6 h-6"></i>
+            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">
+              Flask API Master
+            </h1>
+          </div>
+          <p class="text-xs text-muted">Backend Completo</p>
+        </div>
+        <button onclick="closeSidebar()" class="rounded-lg p-2 text-muted hover:text-white transition md:hidden">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto p-4 space-y-3">
+      <div class="nav-group open rounded-xl border border-white/5 bg-base/20" data-group="intro">
+        <button type="button" onclick="toggleNavGroup('intro')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted transition hover:text-white">
+          <span class="flex items-center gap-2"><i data-lucide="rocket" class="w-3.5 h-3.5"></i> Introdução</span>
+          <i data-lucide="chevron-down" class="chevron w-4 h-4"></i>
+        </button>
+        <div class="nav-group-content">
+          <div class="nav-group-inner px-2 pb-2 space-y-1">
+            <button onclick="showStep('step-intro')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 active group">
+              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition">0</span>
+              <span class="font-medium">O Projeto</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-group open rounded-xl border border-white/5 bg-base/20" data-group="banco">
+        <button type="button" onclick="toggleNavGroup('banco')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted transition hover:text-white">
+          <span class="flex items-center gap-2"><i data-lucide="database" class="w-3.5 h-3.5"></i> Estrutura</span>
+          <i data-lucide="chevron-down" class="chevron w-4 h-4"></i>
+        </button>
+        <div class="nav-group-content">
+          <div class="nav-group-inner px-2 pb-2 space-y-1">
+            <button onclick="showStep('step-setup')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 group">
+              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition">1</span>
+              <span>Setup & Tabelas</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-group open rounded-xl border border-white/5 bg-base/20" data-group="rotas">
+        <button type="button" onclick="toggleNavGroup('rotas')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted transition hover:text-white">
+          <span class="flex items-center gap-2"><i data-lucide="git-merge" class="w-3.5 h-3.5"></i> Rotas (Endpoints)</span>
+          <i data-lucide="chevron-down" class="chevron w-4 h-4"></i>
+        </button>
+        <div class="nav-group-content">
+          <div class="nav-group-inner px-2 pb-2 space-y-1">
+            <button onclick="showStep('step-auth')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 group">
+              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition">2</span>
+              <span>Cadastro & Login</span>
+            </button>
+            <button onclick="showStep('step-tasks')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 group">
+              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition">3</span>
+              <span>Criar Tarefas (JWT)</span>
+            </button>
+            <button onclick="showStep('step-analytics')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 group">
+              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition">4</span>
+              <span>Agrupamento e Filtros</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-group open rounded-xl border border-white/5 bg-base/20" data-group="docs">
+        <button type="button" onclick="toggleNavGroup('docs')" class="nav-group-toggle flex w-full items-center justify-between px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-muted transition hover:text-white">
+          <span class="flex items-center gap-2"><i data-lucide="book-open" class="w-3.5 h-3.5"></i> API Docs</span>
+          <i data-lucide="chevron-down" class="chevron w-4 h-4"></i>
+        </button>
+        <div class="nav-group-content">
+          <div class="nav-group-inner px-2 pb-2 space-y-1">
+            <button onclick="showStep('step-swagger')" class="nav-item w-full text-left px-4 py-3 rounded-lg border border-transparent hover:bg-white/5 transition flex items-center gap-3 group">
+              <span class="grid place-items-center w-6 h-6 rounded bg-white/10 text-xs font-mono group-hover:bg-white/20 transition"><i data-lucide="file-json" class="w-3 h-3"></i></span>
+              <span class="font-medium text-emerald-400">Swagger UI</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </nav>
+  </aside>
+
+  <main class="flex-1 min-w-0 h-screen overflow-y-auto relative scroll-smooth">
+    <header class="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-base/80 px-4 py-3 backdrop-blur md:hidden">
+      <div>
+        <p class="text-[11px] uppercase tracking-[0.18em] text-muted">Tutorial</p>
+        <p class="text-sm font-semibold text-white">Flask API Master</p>
+      </div>
+      <button onclick="openSidebar()" class="rounded-lg border border-border bg-card px-3 py-2 text-white transition hover:border-accent hover:text-accent">
+        <span class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide"><i data-lucide="menu" class="w-4 h-4"></i> Menu</span>
+      </button>
+    </header>
+
+    <div class="p-6 md:p-12">
+    <div class="max-w-4xl mx-auto pb-20">
+
+      <div id="step-intro" class="step-content active space-y-8 animate-fade-in">
+        <div class="border-b border-border pb-6">
+          <span class="text-accent text-sm font-bold tracking-wider uppercase flex items-center gap-2 mb-2">
+            <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span> Módulo Inicial
+          </span>
+          <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-4">Construindo a API</h2>
+          <p class="text-lg text-muted leading-relaxed max-w-2xl">
+            Vamos construir o coração do seu sistema. Uma API Restful capaz de registrar usuários, gerar tokens de segurança (JWT), salvar tarefas financeiras e devolver relatórios calculados no banco de dados.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="p-6 rounded-xl bg-card border border-border hover:border-accent/50 transition-colors group">
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="shield-check" class="text-emerald-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold mb-2 text-white">Autenticação JWT</h3>
+            <p class="text-sm text-muted">A API não tem "sessão" ativa. O usuário loga, recebe um token criptografado e deve enviar esse token no cabeçalho para acessar as tarefas dele.</p>
+          </div>
+
+          <div class="p-6 rounded-xl bg-card border border-border hover:border-accent/50 transition-colors group">
+            <div class="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <i data-lucide="bar-chart-3" class="text-teal-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold mb-2 text-white">Agrupamento SQL</h3>
+            <p class="text-sm text-muted">Vamos fazer o cálculo de tarefas e soma de valores direto no banco de dados usando SQLAlchemy (muito mais rápido que somar no Python).</p>
+          </div>
+        </div>
+
+        <div class="mt-8 flex justify-end">
+          <button onclick="showStep('step-setup')" class="bg-accent hover:bg-emerald-600 text-white px-8 py-4 rounded-xl font-bold transition flex items-center gap-2 shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:-translate-y-1">
+            Iniciar Setup <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="step-setup" class="step-content space-y-8">
+        <div class="border-b border-border pb-6">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-mono font-bold border border-emerald-500/20">PASSO 1</span>
+          </div>
+          <h2 class="text-3xl font-bold text-white">Bibliotecas e Banco de Dados</h2>
+          <p class="text-muted mt-2">Preparando o terreno e desenhando as tabelas User e Task.</p>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl font-semibold text-white">1. Instalações Necessárias</h3>
+          <div class="bg-card rounded-lg border border-border overflow-hidden">
+            <div class="px-4 py-2 border-b border-border bg-base/50 text-xs text-muted font-mono">Terminal</div>
+            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code>pip install flask flask-sqlalchemy flask-jwt-extended werkzeug</code></pre>
+          </div>
+        </div>
+
+        <div class="space-y-4 mt-6">
+          <h3 class="text-xl font-semibold text-white">2. Configuração e Modelos (app.py)</h3>
+          <div class="bg-card rounded-lg border border-border overflow-hidden shadow-lg">
+            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code><span class="py-kw">from</span> flask <span class="py-kw">import</span> Flask, request, jsonify
+<span class="py-kw">from</span> flask_sqlalchemy <span class="py-kw">import</span> SQLAlchemy
+<span class="py-kw">from</span> flask_jwt_extended <span class="py-kw">import</span> JWTManager, create_access_token, jwt_required, get_jwt_identity
+<span class="py-kw">from</span> werkzeug.security <span class="py-kw">import</span> generate_password_hash, check_password_hash
+<span class="py-kw">from</span> datetime <span class="py-kw">import</span> datetime
+
+app = Flask(__name__)
+app.config[<span class="py-str">'SQLALCHEMY_DATABASE_URI'</span>] = <span class="py-str">'sqlite:///banco.db'</span>
+app.config[<span class="py-str">'JWT_SECRET_KEY'</span>] = <span class="py-str">'super-chave-secreta-mudar-em-prod'</span>
+
+db = SQLAlchemy(app)
+jwt = JWTManager(app)
+
+<span class="py-kw">class</span> <span class="py-func">User</span>(db.Model):
+    id = db.Column(db.Integer, primary_key=<span class="py-kw">True</span>)
+    username = db.Column(db.String(80), unique=<span class="py-kw">True</span>, nullable=<span class="py-kw">False</span>)
+    password_hash = db.Column(db.String(256), nullable=<span class="py-kw">False</span>)
+    tasks = db.relationship(<span class="py-str">'Task'</span>, backref=<span class="py-str">'owner'</span>, lazy=<span class="py-kw">True</span>)
+
+<span class="py-kw">class</span> <span class="py-func">Task</span>(db.Model):
+    id = db.Column(db.Integer, primary_key=<span class="py-kw">True</span>)
+    title = db.Column(db.String(100), nullable=<span class="py-kw">False</span>)
+    description = db.Column(db.Text)
+    date = db.Column(db.Date, nullable=<span class="py-kw">False</span>)
+    value = db.Column(db.Float, default=0.0)
+    user_id = db.Column(db.Integer, db.ForeignKey(<span class="py-str">'user.id'</span>), nullable=<span class="py-kw">False</span>)
+
+<span class="py-kw">with</span> app.app_context():
+    db.create_all()</code></pre>
+          </div>
+        </div>
+        
+        <div class="flex justify-between pt-6">
+            <button onclick="showStep('step-intro')" class="text-muted hover:text-white px-4 py-2 text-sm flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
+            <button onclick="showStep('step-auth')" class="bg-card border border-border hover:border-accent hover:text-accent text-white px-6 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">Próximo <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+        </div>
+      </div>
+
+      <div id="step-auth" class="step-content space-y-8">
+        <div class="border-b border-border pb-6">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-mono font-bold border border-blue-500/20">PASSO 2</span>
+          </div>
+          <h2 class="text-3xl font-bold text-white">Cadastro e Login</h2>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xl font-semibold text-white">Criando Usuário</h3>
+          <div class="bg-card rounded-lg border border-border overflow-hidden shadow-lg">
+            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code><span class="py-dec">@app.route</span>(<span class="py-str">'/register'</span>, methods=[<span class="py-str">'POST'</span>])
+<span class="py-kw">def</span> <span class="py-func">register</span>():
+    data = request.get_json()
+    <span class="py-kw">if</span> User.query.filter_by(username=data[<span class="py-str">'username'</span>]).first():
+        <span class="py-kw">return</span> jsonify({<span class="py-str">"error"</span>: <span class="py-str">"Usuário já existe"</span>}), 400
+
+    hashed_password = generate_password_hash(data[<span class="py-str">'password'</span>])
+    new_user = User(username=data[<span class="py-str">'username'</span>], password_hash=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+    
+    <span class="py-kw">return</span> jsonify({<span class="py-str">"message"</span>: <span class="py-str">"Usuário criado com sucesso!"</span>}), 201</code></pre>
+          </div>
+        </div>
+
+        <div class="space-y-4 mt-6">
+          <h3 class="text-xl font-semibold text-white">Efetuando Login</h3>
+          <div class="bg-card rounded-lg border border-border overflow-hidden shadow-lg">
+            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code><span class="py-dec">@app.route</span>(<span class="py-str">'/login'</span>, methods=[<span class="py-str">'POST'</span>])
+<span class="py-kw">def</span> <span class="py-func">login</span>():
+    data = request.get_json()
+    user = User.query.filter_by(username=data[<span class="py-str">'username'</span>]).first()
+
+    <span class="py-kw">if</span> <span class="py-kw">not</span> user <span class="py-kw">or not</span> check_password_hash(user.password_hash, data[<span class="py-str">'password'</span>]):
+        <span class="py-kw">return</span> jsonify({<span class="py-str">"error"</span>: <span class="py-str">"Credenciais inválidas"</span>}), 401
+
+    access_token = create_access_token(identity=str(user.id))
+    <span class="py-kw">return</span> jsonify({<span class="py-str">"token"</span>: access_token}), 200</code></pre>
+          </div>
+        </div>
+
+        <div class="flex justify-between pt-6">
+            <button onclick="showStep('step-setup')" class="text-muted hover:text-white px-4 py-2 text-sm flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
+            <button onclick="showStep('step-tasks')" class="bg-card border border-border hover:border-accent hover:text-accent text-white px-6 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">Próximo <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+        </div>
+      </div>
+
+      <div id="step-tasks" class="step-content space-y-8">
+        <div class="border-b border-border pb-6">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 text-xs font-mono font-bold border border-orange-500/20">PASSO 3</span>
+          </div>
+          <h2 class="text-3xl font-bold text-white">Criando Tarefas</h2>
+        </div>
+
+        <div class="space-y-4">
+          <div class="bg-card rounded-lg border border-border overflow-hidden shadow-lg">
+            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code><span class="py-dec">@app.route</span>(<span class="py-str">'/tasks'</span>, methods=[<span class="py-str">'POST'</span>])
+<span class="py-dec">@jwt_required()</span>
+<span class="py-kw">def</span> <span class="py-func">create_task</span>():
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+
+    task_date = datetime.strptime(data[<span class="py-str">'date'</span>], <span class="py-str">'%Y-%m-%d'</span>).date()
+
+    new_task = Task(
+        title=data[<span class="py-str">'title'</span>],
+        description=data.get(<span class="py-str">'description'</span>, <span class="py-str">""</span>),
+        date=task_date,
+        value=data.get(<span class="py-str">'value'</span>, 0.0),
+        user_id=current_user_id
+    )
+
+    db.session.add(new_task)
+    db.session.commit()
+    <span class="py-kw">return</span> jsonify({<span class="py-str">"message"</span>: <span class="py-str">"Tarefa registrada!"</span>}), 201</code></pre>
+          </div>
+        </div>
+
+        <div class="flex justify-between pt-6">
+            <button onclick="showStep('step-auth')" class="text-muted hover:text-white px-4 py-2 text-sm flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
+            <button onclick="showStep('step-analytics')" class="bg-card border border-border hover:border-accent hover:text-accent text-white px-6 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">Próximo <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+        </div>
+      </div>
+
+      <div id="step-analytics" class="step-content space-y-8">
+        <div class="border-b border-border pb-6">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-mono font-bold border border-purple-500/20">PASSO 4</span>
+          </div>
+          <h2 class="text-3xl font-bold text-white">Agrupamento SQL</h2>
+        </div>
+
+        <div class="space-y-4">
+          <div class="bg-card rounded-lg border border-border overflow-hidden shadow-lg">
+            <pre class="!border-0 !rounded-none !bg-transparent opacity-90"><code><span class="py-kw">from</span> sqlalchemy <span class="py-kw">import</span> func
+
+<span class="py-dec">@app.route</span>(<span class="py-str">'/tasks/summary'</span>, methods=[<span class="py-str">'GET'</span>])
+<span class="py-dec">@jwt_required()</span>
+<span class="py-kw">def</span> <span class="py-func">get_tasks_summary</span>():
+    current_user_id = get_jwt_identity()
+    
+    daily_stats = db.session.query(
+        Task.date,
+        func.count(Task.id).label(<span class="py-str">'total_tasks'</span>),
+        func.sum(Task.value).label(<span class="py-str">'total_value'</span>)
+    ).filter(Task.user_id == current_user_id) \
+     .group_by(Task.date).all()
+
+    daily_result = [
+        {
+            <span class="py-str">"date"</span>: stat.date.strftime(<span class="py-str">'%Y-%m-%d'</span>),
+            <span class="py-str">"tasks_count"</span>: stat.total_tasks,
+            <span class="py-str">"total_value"</span>: stat.total_value <span class="py-kw">or</span> 0.0
+        } <span class="py-kw">for</span> stat <span class="py-kw">in</span> daily_stats
+    ]
+
+    <span class="py-kw">return</span> jsonify({<span class="py-str">"daily_summary"</span>: daily_result}), 200
+
+<span class="py-kw">if</span> __name__ == <span class="py-str">'__main__'</span>:
+    app.run(debug=<span class="py-kw">True</span>, port=5000)</code></pre>
+          </div>
+        </div>
+
+        <div class="flex justify-between pt-6 pb-20">
+            <button onclick="showStep('step-tasks')" class="text-muted hover:text-white px-4 py-2 text-sm flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
+            <button onclick="showStep('step-swagger')" class="bg-card border border-border hover:border-emerald-500 hover:text-emerald-400 text-white px-6 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">Ver Documentação (Swagger) <i data-lucide="file-json" class="w-4 h-4"></i></button>
+        </div>
+      </div>
+
+      <div id="step-swagger" class="step-content space-y-8">
+        <div class="border-b border-border pb-6">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="px-3 py-1 rounded-full bg-slate-500/10 text-slate-400 text-xs font-mono font-bold border border-slate-500/20">DOCUMENTAÇÃO</span>
+          </div>
+          <h2 class="text-3xl font-bold text-white flex items-center gap-3">Swagger UI <i data-lucide="book-open" class="text-emerald-400 w-6 h-6"></i></h2>
+          <p class="text-muted mt-2">Guia de consumo da API. Envie o <code>Content-Type: application/json</code> em todas as requisições.</p>
+        </div>
+
+        <div class="space-y-6">
+          
+          <div class="border border-emerald-500/30 bg-emerald-500/5 rounded-lg overflow-hidden">
+            <div class="px-4 py-3 border-b border-emerald-500/20 flex flex-wrap items-center gap-3 bg-emerald-500/10">
+              <span class="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded">POST</span>
+              <span class="font-mono text-white text-sm">/register</span>
+              <span class="text-xs text-emerald-100/70 ml-auto hidden sm:block">Cria um novo usuário</span>
+            </div>
+            <div class="p-4 flex flex-col md:flex-row gap-6 text-sm">
+              <div class="flex-1">
+                <p class="text-xs font-bold text-muted mb-2 uppercase">Request Body</p>
+                <pre class="!bg-black/30 !p-3 !text-xs !border-border"><code>{
+  "username": "rodrigo",
+  "password": "123"
+}</code></pre>
+              </div>
+              <div class="flex-1">
+                <p class="text-xs font-bold text-muted mb-2 uppercase">Response (201 Created)</p>
+                <pre class="!bg-black/30 !p-3 !text-xs !border-emerald-500/30"><code>{
+  "message": "Usuário criado com sucesso!"
+}</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="border border-emerald-500/30 bg-emerald-500/5 rounded-lg overflow-hidden">
+            <div class="px-4 py-3 border-b border-emerald-500/20 flex flex-wrap items-center gap-3 bg-emerald-500/10">
+              <span class="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded">POST</span>
+              <span class="font-mono text-white text-sm">/login</span>
+              <span class="text-xs text-emerald-100/70 ml-auto hidden sm:block">Autenticação (Gera Token)</span>
+            </div>
+            <div class="p-4 flex flex-col md:flex-row gap-6 text-sm">
+              <div class="flex-1">
+                <p class="text-xs font-bold text-muted mb-2 uppercase">Request Body</p>
+                <pre class="!bg-black/30 !p-3 !text-xs !border-border"><code>{
+  "username": "rodrigo",
+  "password": "123"
+}</code></pre>
+              </div>
+              <div class="flex-1">
+                <p class="text-xs font-bold text-muted mb-2 uppercase">Response (200 OK)</p>
+                <pre class="!bg-black/30 !p-3 !text-xs !border-emerald-500/30"><code>{
+  "message": "Login realizado!",
+  "token": "eyJhbGciOiJIUzI1NiIsInR..."
+}</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="border border-emerald-500/30 bg-emerald-500/5 rounded-lg overflow-hidden">
+            <div class="px-4 py-3 border-b border-emerald-500/20 flex flex-wrap items-center gap-3 bg-emerald-500/10">
+              <span class="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded">POST</span>
+              <span class="font-mono text-white text-sm">/tasks</span>
+              <i data-lucide="lock" class="w-4 h-4 text-emerald-400" title="Requer Autenticação JWT"></i>
+              <span class="text-xs text-emerald-100/70 ml-auto hidden sm:block">Registra nova tarefa</span>
+            </div>
+            <div class="p-4 text-sm border-b border-emerald-500/10">
+              <p class="text-xs font-bold text-emerald-400 mb-1 uppercase">Headers Necessários</p>
+              <code class="text-xs bg-black/30 px-2 py-1 rounded">Authorization: Bearer &lt;seu_token_aqui&gt;</code>
+            </div>
+            <div class="p-4 flex flex-col md:flex-row gap-6 text-sm">
+              <div class="flex-1">
+                <p class="text-xs font-bold text-muted mb-2 uppercase">Request Body</p>
+                <pre class="!bg-black/30 !p-3 !text-xs !border-border"><code>{
+  "title": "Configurar Servidor",
+  "description": "Ajustar Nginx e Docker",
+  "date": "2026-03-02",
+  "value": 1500.00
+}</code></pre>
+              </div>
+              <div class="flex-1">
+                <p class="text-xs font-bold text-muted mb-2 uppercase">Response (201 Created)</p>
+                <pre class="!bg-black/30 !p-3 !text-xs !border-emerald-500/30"><code>{
+  "message": "Tarefa registrada com sucesso!"
+}</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="border border-blue-500/30 bg-blue-500/5 rounded-lg overflow-hidden">
+            <div class="px-4 py-3 border-b border-blue-500/20 flex flex-wrap items-center gap-3 bg-blue-500/10">
+              <span class="px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded">GET</span>
+              <span class="font-mono text-white text-sm">/tasks/summary</span>
+              <i data-lucide="lock" class="w-4 h-4 text-blue-400" title="Requer Autenticação JWT"></i>
+              <span class="text-xs text-blue-100/70 ml-auto hidden sm:block">Retorna cálculo agrupado</span>
+            </div>
+            <div class="p-4 text-sm border-b border-blue-500/10">
+              <p class="text-xs font-bold text-blue-400 mb-1 uppercase">Headers Necessários</p>
+              <code class="text-xs bg-black/30 px-2 py-1 rounded">Authorization: Bearer &lt;seu_token_aqui&gt;</code>
+            </div>
+            <div class="p-4 flex flex-col md:flex-row gap-6 text-sm">
+              <div class="flex-1 opacity-50">
+                <p class="text-xs font-bold text-muted mb-2 uppercase">Request Body</p>
+                <p class="text-xs italic text-muted mt-4">Nenhum corpo necessário para requisições GET.</p>
+              </div>
+              <div class="flex-1">
+                <p class="text-xs font-bold text-muted mb-2 uppercase">Response (200 OK)</p>
+                <pre class="!bg-black/30 !p-3 !text-xs !border-blue-500/30"><code>{
+  "user_id": "1",
+  "daily_summary": [
+    {
+      "date": "2026-03-02",
+      "tasks_count": 1,
+      "total_value": 1500.0
+    }
+  ]
+}</code></pre>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="flex justify-start pt-6 pb-20">
+            <button onclick="showStep('step-analytics')" class="text-muted hover:text-white px-4 py-2 text-sm flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
+        </div>
+      </div>
+
+    </div>
+    </div>
+  </main>
+
+  <script>
+    lucide.createIcons();
+    const drawer = document.getElementById('sidebar-drawer');
+    const backdrop = document.getElementById('sidebar-backdrop');
+
+    function openSidebar() {
+      drawer.classList.add('open');
+      backdrop.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+      drawer.classList.remove('open');
+      backdrop.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    function toggleNavGroup(groupName) {
+      const group = document.querySelector(`[data-group="${groupName}"]`);
+      if (!group) return;
+      group.classList.toggle('open');
+    }
+
+    function showStep(stepId) {
+      document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+      const content = document.getElementById(stepId);
+      content.classList.remove('active');
+      void content.offsetWidth;
+      content.classList.add('active');
+
+      document.querySelector('main').scrollTop = 0;
+
+      const btn = document.querySelector(`button[onclick="showStep('${stepId}')"]`);
+      if (btn) btn.classList.add('active');
+
+      if (window.innerWidth < 768) closeSidebar();
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeSidebar();
+    });
+  </script>
+</body>
+</html>
